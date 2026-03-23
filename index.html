@@ -135,6 +135,7 @@ input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 4px 4px 8p
     <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">PRODUCT INFORMATION</div>
     <div class="grid md:grid-cols-2 gap-4 mb-6">
       <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Device/Product Name *</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. SmartSuture Pro X200"></div>
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Product Number *</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. SKU-2026-0451"></div>
       <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Manufacturer *</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. MedTech Solutions Inc."></div>
     </div>
     <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">SPONSOR INFORMATION</div>
@@ -317,19 +318,19 @@ input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 4px 4px 8p
 // ===== MOCK DATA =====
 const HOSPITALS = ['Metro General Hospital','Riverside Medical Center','Lakewood Community Hospital','Valley Health Clinic'];
 const REQUESTS = [
-  {id:1,product:'SmartSuture Pro X200',manufacturer:'MedTech Solutions',sponsor:'Dr. Sarah Chen',sponsorTitle:'Head of Surgery',hospital:'Metro General Hospital',status:'approved',submitted:'2026-02-15',notes:'Advanced suturing device with haptic feedback.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'How would you rate the overall usability?',type:'rating'},{q:'Did the device perform better than your current solution?',type:'yesno',biasFlag:'Leading question — implies current solution is inferior'},{q:'Describe any issues encountered.',type:'text'},{q:'Would you recommend this device for adoption?',type:'yesno'}]},
-  {id:2,product:'CardioMonitor Elite',manufacturer:'HeartTech Inc.',sponsor:'Dr. Michael Torres',sponsorTitle:'Cardiology Director',hospital:'Riverside Medical Center',status:'under_review',submitted:'2026-03-10',notes:'Non-invasive cardiac monitoring with AI alerts.',duration:45,evalCount:30,salesRep:'John Miller',questions:[{q:'Rate the accuracy of readings compared to current monitors.',type:'rating'},{q:'This device is clearly superior to alternatives.',type:'rating',biasFlag:'Leading/biased phrasing — assumes superiority'},{q:'How easy was setup and calibration?',type:'rating'},{q:'Any connectivity issues?',type:'yesno'},{q:'Additional comments on reliability.',type:'text'}]},
-  {id:3,product:'FlexiCath Ultra',manufacturer:'VascuTech',sponsor:'Nurse Mgr. Lisa Park',sponsorTitle:'ICU Nurse Manager',hospital:'Metro General Hospital',status:'submitted',submitted:'2026-03-18',notes:'Flexible catheter with antimicrobial coating.',duration:21,evalCount:15,salesRep:'John Miller',questions:[{q:'Rate insertion ease.',type:'rating'},{q:'Patient comfort level observed?',type:'rating'},{q:'Any complications during use?',type:'text'}]},
-  {id:4,product:'WoundVac NextGen',manufacturer:'HealFast Medical',sponsor:'Dr. James Wright',sponsorTitle:'Wound Care Specialist',hospital:'Lakewood Community Hospital',status:'changes_requested',submitted:'2026-03-05',notes:'Negative pressure wound therapy device.',duration:30,evalCount:25,salesRep:'John Miller',reviewComment:'Please revise Q2 — currently biased toward positive outcomes. Also add a question about ease of dressing changes.',questions:[{q:'Overall satisfaction with wound healing outcomes?',type:'rating'},{q:'Don\'t you agree this device accelerates healing?',type:'yesno',biasFlag:'Leading question — presumes positive outcome'},{q:'Noise level during operation?',type:'rating'},{q:'Describe patient feedback.',type:'text'}]},
-  {id:5,product:'OrthoNav 3D',manufacturer:'BoneGuide Systems',sponsor:'Dr. Amy Patel',sponsorTitle:'Orthopedic Surgeon',hospital:'Valley Health Clinic',status:'rejected',submitted:'2026-02-28',notes:'3D navigation system for joint replacement.',duration:60,evalCount:10,salesRep:'Sarah Adams',reviewComment:'Product category already under active trial with a competitor device. Resubmit after current trial concludes.',questions:[{q:'Accuracy of navigation guidance?',type:'rating'},{q:'Surgical time comparison?',type:'text'}]},
-  {id:6,product:'InfuSmart Pump',manufacturer:'PrecisionFlow',sponsor:'Dr. Rachel Kim',sponsorTitle:'Anesthesiology Chair',hospital:'Metro General Hospital',status:'draft',submitted:'',notes:'AI-powered infusion pump with error detection.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'Rate ease of programming.',type:'rating'},{q:'Error detection accuracy?',type:'rating'}]},
-  {id:7,product:'BreatheEasy Ventilator',manufacturer:'AirMed Corp',sponsor:'Dr. Tom Richards',sponsorTitle:'Pulmonology Director',hospital:'Riverside Medical Center',status:'approved',submitted:'2026-01-20',notes:'Portable ventilator with adaptive pressure.',duration:45,evalCount:35,salesRep:'Sarah Adams',questions:[{q:'Patient comfort rating.',type:'rating'},{q:'Ease of transport?',type:'rating'},{q:'Battery life adequate?',type:'yesno'},{q:'Additional observations.',type:'text'}]},
-  {id:8,product:'SkinScope AI',manufacturer:'DermVision',sponsor:'Dr. Nina Volkov',sponsorTitle:'Dermatology Head',hospital:'Lakewood Community Hospital',status:'approved',submitted:'2026-02-01',notes:'AI-assisted dermatoscope for lesion analysis.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'Accuracy of AI analysis?',type:'rating'},{q:'Speed of diagnosis support?',type:'rating'},{q:'Would you trust AI-flagged results?',type:'yesno'},{q:'Usability notes.',type:'text'}]}
+  {id:1,product:'SmartSuture Pro X200',productNumber:'SKU-2026-0451',manufacturer:'MedTech Solutions',sponsor:'Dr. Sarah Chen',sponsorTitle:'Head of Surgery',hospital:'Metro General Hospital',status:'approved',submitted:'2026-02-15',notes:'Advanced suturing device with haptic feedback.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'How would you rate the overall usability?',type:'rating'},{q:'Did the device perform better than your current solution?',type:'yesno',biasFlag:'Leading question — implies current solution is inferior'},{q:'Describe any issues encountered.',type:'text'},{q:'Would you recommend this device for adoption?',type:'yesno'}]},
+  {id:2,product:'CardioMonitor Elite',productNumber:'CM-ELT-8820',manufacturer:'HeartTech Inc.',sponsor:'Dr. Michael Torres',sponsorTitle:'Cardiology Director',hospital:'Riverside Medical Center',status:'under_review',submitted:'2026-03-10',notes:'Non-invasive cardiac monitoring with AI alerts.',duration:45,evalCount:30,salesRep:'John Miller',questions:[{q:'Rate the accuracy of readings compared to current monitors.',type:'rating'},{q:'This device is clearly superior to alternatives.',type:'rating',biasFlag:'Leading/biased phrasing — assumes superiority'},{q:'How easy was setup and calibration?',type:'rating'},{q:'Any connectivity issues?',type:'yesno'},{q:'Additional comments on reliability.',type:'text'}]},
+  {id:3,product:'FlexiCath Ultra',productNumber:'FC-ULT-3310',manufacturer:'VascuTech',sponsor:'Nurse Mgr. Lisa Park',sponsorTitle:'ICU Nurse Manager',hospital:'Metro General Hospital',status:'submitted',submitted:'2026-03-18',notes:'Flexible catheter with antimicrobial coating.',duration:21,evalCount:15,salesRep:'John Miller',questions:[{q:'Rate insertion ease.',type:'rating'},{q:'Patient comfort level observed?',type:'rating'},{q:'Any complications during use?',type:'text'}]},
+  {id:4,product:'WoundVac NextGen',productNumber:'WV-NG-5500',manufacturer:'HealFast Medical',sponsor:'Dr. James Wright',sponsorTitle:'Wound Care Specialist',hospital:'Lakewood Community Hospital',status:'changes_requested',submitted:'2026-03-05',notes:'Negative pressure wound therapy device.',duration:30,evalCount:25,salesRep:'John Miller',reviewComment:'Please revise Q2 — currently biased toward positive outcomes. Also add a question about ease of dressing changes.',questions:[{q:'Overall satisfaction with wound healing outcomes?',type:'rating'},{q:'Don\'t you agree this device accelerates healing?',type:'yesno',biasFlag:'Leading question — presumes positive outcome'},{q:'Noise level during operation?',type:'rating'},{q:'Describe patient feedback.',type:'text'}]},
+  {id:5,product:'OrthoNav 3D',productNumber:'ON3D-7720',manufacturer:'BoneGuide Systems',sponsor:'Dr. Amy Patel',sponsorTitle:'Orthopedic Surgeon',hospital:'Valley Health Clinic',status:'rejected',submitted:'2026-02-28',notes:'3D navigation system for joint replacement.',duration:60,evalCount:10,salesRep:'Sarah Adams',reviewComment:'Product category already under active trial with a competitor device. Resubmit after current trial concludes.',questions:[{q:'Accuracy of navigation guidance?',type:'rating'},{q:'Surgical time comparison?',type:'text'}]},
+  {id:6,product:'InfuSmart Pump',productNumber:'ISP-4400',manufacturer:'PrecisionFlow',sponsor:'Dr. Rachel Kim',sponsorTitle:'Anesthesiology Chair',hospital:'Metro General Hospital',status:'draft',submitted:'',notes:'AI-powered infusion pump with error detection.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'Rate ease of programming.',type:'rating'},{q:'Error detection accuracy?',type:'rating'}]},
+  {id:7,product:'BreatheEasy Ventilator',productNumber:'BE-VNT-9910',manufacturer:'AirMed Corp',sponsor:'Dr. Tom Richards',sponsorTitle:'Pulmonology Director',hospital:'Riverside Medical Center',status:'approved',submitted:'2026-01-20',notes:'Portable ventilator with adaptive pressure.',duration:45,evalCount:35,salesRep:'Sarah Adams',questions:[{q:'Patient comfort rating.',type:'rating'},{q:'Ease of transport?',type:'rating'},{q:'Battery life adequate?',type:'yesno'},{q:'Additional observations.',type:'text'}]},
+  {id:8,product:'SkinScope AI',productNumber:'SS-AI-6650',manufacturer:'DermVision',sponsor:'Dr. Nina Volkov',sponsorTitle:'Dermatology Head',hospital:'Lakewood Community Hospital',status:'approved',submitted:'2026-02-01',notes:'AI-assisted dermatoscope for lesion analysis.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'Accuracy of AI analysis?',type:'rating'},{q:'Speed of diagnosis support?',type:'rating'},{q:'Would you trust AI-flagged results?',type:'yesno'},{q:'Usability notes.',type:'text'}]}
 ];
 const TRIALS = [
-  {id:101,requestId:1,product:'SmartSuture Pro X200',hospital:'Metro General Hospital',start:'2026-03-01',end:'2026-03-30',target:20,completed:14,status:'active',decision:null},
-  {id:102,requestId:7,product:'BreatheEasy Ventilator',hospital:'Riverside Medical Center',start:'2026-02-01',end:'2026-03-15',target:35,completed:35,status:'completed',decision:'adopted'},
-  {id:103,requestId:8,product:'SkinScope AI',hospital:'Lakewood Community Hospital',start:'2026-02-15',end:'2026-03-15',target:20,completed:18,status:'completed',decision:'deferred'}
+  {id:101,requestId:1,product:'SmartSuture Pro X200',productNumber:'SKU-2026-0451',hospital:'Metro General Hospital',start:'2026-03-01',end:'2026-03-30',target:20,completed:14,status:'active',decision:null},
+  {id:102,requestId:7,product:'BreatheEasy Ventilator',productNumber:'BE-VNT-9910',hospital:'Riverside Medical Center',start:'2026-02-01',end:'2026-03-15',target:35,completed:35,status:'completed',decision:'adopted'},
+  {id:103,requestId:8,product:'SkinScope AI',productNumber:'SS-AI-6650',hospital:'Lakewood Community Hospital',start:'2026-02-15',end:'2026-03-15',target:20,completed:18,status:'completed',decision:'deferred'}
 ];
 
 let currentRole = null, currentUser = null, navHistory = [];
@@ -393,6 +394,7 @@ function renderRequestDetail(id) {
       </div>
       <div class="grid md:grid-cols-2 gap-4 text-sm">
         <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product</span><span class="font-semibold">${r.product}</span></div>
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product Number</span><span class="font-mono">${r.productNumber||'—'}</span></div>
         <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Manufacturer</span>${r.manufacturer}</div>
         <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Sponsor</span>${r.sponsor} — ${r.sponsorTitle}</div>
         <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Hospital</span>${r.hospital}</div>
@@ -484,6 +486,7 @@ function renderVAReview(id) {
         <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">REQUEST DETAILS</div>
         <div class="grid grid-cols-2 gap-4 text-sm">
           <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product</span><span class="font-semibold">${r.product}</span></div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product Number</span><span class="font-mono">${r.productNumber||'—'}</span></div>
           <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Manufacturer</span>${r.manufacturer}</div>
           <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Sponsor</span>${r.sponsor}</div>
           <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Hospital</span>${r.hospital}</div>
@@ -641,7 +644,50 @@ function setDecision(id, decision) {
   const t = TRIALS.find(x=>x.id===id);
   if(t) { t.decision = decision; alert(`Trial marked as: ${decision}`); navigate('trial-detail', id); }
 }
-function submitRequest() { alert('Trial request submitted successfully! The Value Analysis Team will review it shortly.'); navigate('sales-dash'); }
+function submitRequest() {
+  const form = document.querySelector('[data-page="new-request"]');
+  const inputs = form.querySelectorAll('input, select, textarea');
+  const product = inputs[0]?.value || 'New Device';
+  const manufacturer = inputs[1]?.value || 'Unknown Manufacturer';
+  const sponsor = inputs[2]?.value || 'Dr. Unknown';
+  const sponsorTitle = inputs[3]?.value || '';
+  const hospital = inputs[4]?.value || 'Metro General Hospital';
+  const startDate = inputs[5]?.value || '';
+  const duration = parseInt(inputs[6]?.value) || 30;
+  const evalCount = parseInt(inputs[7]?.value) || 20;
+  const notes = inputs[8]?.value || '';
+  
+  // Collect questions
+  const qEls = document.querySelectorAll('#question-builder > div');
+  const questions = [];
+  qEls.forEach((el, i) => {
+    const qInput = el.querySelector('input');
+    const qType = el.querySelector('select');
+    if (qInput && qInput.value) {
+      questions.push({ q: qInput.value, type: qType?.value?.toLowerCase().replace(' ','') || 'rating' });
+    }
+  });
+
+  const newId = REQUESTS.length + 1;
+  REQUESTS.push({
+    id: newId,
+    product,
+    manufacturer,
+    sponsor,
+    sponsorTitle,
+    hospital: hospital === 'Select hospital...' ? 'Metro General Hospital' : hospital,
+    status: 'submitted',
+    submitted: new Date().toISOString().split('T')[0],
+    notes,
+    duration,
+    evalCount,
+    salesRep: 'John Miller',
+    questions: questions.length ? questions : [{q:'Default question',type:'rating'}]
+  });
+
+  alert('Trial request submitted successfully! The Value Analysis Team will review it shortly.');
+  navigate('sales-dash');
+}
 function addQuestion() {
   const builder = document.getElementById('question-builder');
   const n = builder.children.length + 1;
