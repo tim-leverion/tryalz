@@ -294,7 +294,15 @@ input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 4px 4px 8p
       </div>
     </div>
     <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
-      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">OPTIONAL: Your role</label>
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">YOUR NAME *</label>
+      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Sarah Johnson">
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">HOSPITAL UNIT / DEPARTMENT *</label>
+      <select class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]"><option>Select unit...</option><option>Surgical Unit</option><option>ICU</option><option>Emergency Department</option><option>Cardiology</option><option>Orthopedics</option><option>General Medicine</option><option>Oncology</option><option>Pediatrics</option><option>Other</option></select>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">YOUR ROLE</label>
       <select class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]"><option>Select...</option><option>Registered Nurse</option><option>Surgical Nurse</option><option>Nurse Practitioner</option><option>Clinical Specialist</option></select>
     </div>
     <button onclick="submitEval()" class="btn-press w-full py-4 bg-accent rounded-[16px] cursor-pointer hover:bg-accent-hover shadow-[4px_4px_8px_rgba(37,99,235,.3)]">
@@ -565,7 +573,9 @@ function renderTrialDetail(id) {
   const r = REQUESTS.find(x=>x.id===t.requestId);
   const pct = Math.round(t.completed/t.target*100);
   document.getElementById('td-title').textContent = t.product;
-  const mockEvals = Array.from({length:t.completed},(_,i)=>({id:i+1,date:`2026-03-${String(1+i%28).padStart(2,'0')}`,role:['RN','Surgical Nurse','NP','Clinical Spec'][i%4],q1:3+Math.round(Math.random()*2),q2:Math.random()>.3?'Yes':'No'}));
+  const nurseNames = ['Sarah Johnson','Emily Davis','Maria Garcia','Jennifer Lee','Amanda Wilson','Rachel Brown','Laura Martinez','Nicole Taylor','Megan Anderson','Stephanie Thomas','Jessica White','Ashley Harris','Brittany Clark','Samantha Lewis','Kayla Robinson'];
+  const units = ['Surgical Unit','ICU','Emergency Dept','Cardiology','Orthopedics','General Medicine'];
+  const mockEvals = Array.from({length:t.completed},(_,i)=>({id:i+1,date:`2026-03-${String(1+i%28).padStart(2,'0')}`,name:nurseNames[i%nurseNames.length],unit:units[i%units.length],role:['RN','Surgical Nurse','NP','Clinical Spec'][i%4],q1:3+Math.round(Math.random()*2),q2:Math.random()>.3?'Yes':'No'}));
   const avgRating = (mockEvals.reduce((s,e)=>s+e.q1,0)/mockEvals.length).toFixed(1);
   const yesRate = Math.round(mockEvals.filter(e=>e.q2==='Yes').length/mockEvals.length*100);
   let html = `
@@ -600,9 +610,9 @@ function renderTrialDetail(id) {
       <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws">
         <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">RECENT EVALUATIONS</div>
         <div class="overflow-x-auto"><table class="w-full font-mono text-[11px]"><thead><tr class="text-ink-muted border-b-2 border-muted">
-          <th class="text-left py-2 px-2">#</th><th class="text-left py-2 px-2">Date</th><th class="text-left py-2 px-2">Role</th><th class="text-center py-2 px-2">Usability</th><th class="text-center py-2 px-2">Better?</th>
+          <th class="text-left py-2 px-2">#</th><th class="text-left py-2 px-2">Name</th><th class="text-left py-2 px-2">Unit</th><th class="text-left py-2 px-2">Role</th><th class="text-left py-2 px-2">Date</th><th class="text-center py-2 px-2">Usability</th><th class="text-center py-2 px-2">Better?</th>
         </tr></thead><tbody>${mockEvals.slice(0,10).map(e=>`
-          <tr class="border-b border-muted/30"><td class="py-2 px-2 text-ink-muted">${e.id}</td><td class="py-2 px-2">${e.date}</td><td class="py-2 px-2">${e.role}</td><td class="py-2 px-2 text-center font-bold">${e.q1}/5</td><td class="py-2 px-2 text-center ${e.q2==='Yes'?'text-green-600':'text-red-500'}">${e.q2}</td></tr>`).join('')}
+          <tr class="border-b border-muted/30"><td class="py-2 px-2 text-ink-muted">${e.id}</td><td class="py-2 px-2 text-ink">${e.name}</td><td class="py-2 px-2">${e.unit}</td><td class="py-2 px-2">${e.role}</td><td class="py-2 px-2">${e.date}</td><td class="py-2 px-2 text-center font-bold">${e.q1}/5</td><td class="py-2 px-2 text-center ${e.q2==='Yes'?'text-green-600':'text-red-500'}">${e.q2}</td></tr>`).join('')}
         </tbody></table></div>
       </div>
     </div>
