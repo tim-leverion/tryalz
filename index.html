@@ -668,27 +668,133 @@ function renderTrialDetail(id) {
         <div class="mb-2 flex justify-between font-mono text-[11px]"><span class="text-ink-muted">Evaluations</span><span class="font-bold">${t.completed}/${t.target} (${pct}%)</span></div>
         <div class="shadow-neu-in rounded-full h-5 bg-chassis overflow-hidden"><div class="h-full rounded-full bg-accent transition-all flex items-center justify-center" style="width:${pct}%"><span class="font-mono text-[9px] text-white font-bold">${pct}%</span></div></div>
       </div>
-      <!-- Summary Charts -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift text-center">
-          <div class="font-mono text-[9px] text-ink-muted uppercase mb-2">AVG USABILITY RATING</div>
-          <div class="font-mono text-4xl font-bold text-accent">${avgRating}</div>
-          <div class="font-mono text-[10px] text-ink-muted">out of 5.0</div>
+      <!-- Per-Question Breakdown -->
+      <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-4">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted">📊 PER-QUESTION BREAKDOWN</div>
+          <div class="flex-1 h-[2px] rounded-full bg-muted shadow-[inset_0_1px_3px_rgba(0,0,0,.15)]"></div>
         </div>
-        <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift text-center">
-          <div class="font-mono text-[9px] text-ink-muted uppercase mb-2">BETTER THAN CURRENT</div>
-          <div class="font-mono text-4xl font-bold text-green-600">${yesRate}%</div>
-          <div class="font-mono text-[10px] text-ink-muted">said yes</div>
+        <!-- Q1: Rating -->
+        <div class="shadow-neu-in rounded-[12px] p-4 mb-4">
+          <div class="font-mono text-[10px] font-bold text-ink-muted mb-1">Q1: How would you rate the overall usability?</div>
+          <div class="font-mono text-[9px] text-ink-muted mb-3">TYPE: RATING 1–5</div>
+          <div class="flex items-center gap-4">
+            <div class="text-center"><div class="font-mono text-3xl font-bold text-accent">${avgRating}</div><div class="font-mono text-[9px] text-ink-muted">AVG / 5.0</div></div>
+            <div class="flex-1 space-y-1">
+              ${[5,4,3,2,1].map(star => {
+                const count = mockEvals.filter(e=>e.q1===star).length;
+                const pctBar = Math.round(count/mockEvals.length*100);
+                return `<div class="flex items-center gap-2"><span class="font-mono text-[10px] text-ink-muted w-4">${star}★</span><div class="flex-1 shadow-neu-in rounded-full h-2.5 bg-chassis overflow-hidden"><div class="h-full rounded-full bg-accent" style="width:${pctBar}%"></div></div><span class="font-mono text-[10px] text-ink-muted w-8 text-right">${count}</span></div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+        <!-- Q2: Yes/No -->
+        <div class="shadow-neu-in rounded-[12px] p-4 mb-4">
+          <div class="font-mono text-[10px] font-bold text-ink-muted mb-1">Q2: Did the device perform better than your current solution?</div>
+          <div class="font-mono text-[9px] text-ink-muted mb-3">TYPE: YES / NO</div>
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+              <div class="w-16 h-16 rounded-full shadow-neu-sm bg-chassis flex items-center justify-center"><span class="font-mono text-lg font-bold text-green-600">${yesRate}%</span></div>
+              <div><div class="font-mono text-[11px] font-bold text-green-600">YES</div><div class="font-mono text-[10px] text-ink-muted">${mockEvals.filter(e=>e.q2==='Yes').length} responses</div></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-16 h-16 rounded-full shadow-neu-sm bg-chassis flex items-center justify-center"><span class="font-mono text-lg font-bold text-red-500">${100-yesRate}%</span></div>
+              <div><div class="font-mono text-[11px] font-bold text-red-500">NO</div><div class="font-mono text-[10px] text-ink-muted">${mockEvals.filter(e=>e.q2==='No').length} responses</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Q3: Open-ended -->
+        <div class="shadow-neu-in rounded-[12px] p-4 mb-4">
+          <div class="font-mono text-[10px] font-bold text-ink-muted mb-1">Q3: Describe any issues encountered during use</div>
+          <div class="font-mono text-[9px] text-ink-muted mb-3">TYPE: OPEN-ENDED</div>
+          <div class="shadow-neu rounded-[8px] p-3 bg-chassis mb-3">
+            <div class="flex items-center gap-2 mb-2"><span class="text-sm">🤖</span><span class="font-mono text-[9px] font-bold text-accent uppercase tracking-[.08em]">AI SUMMARY</span></div>
+            <p class="text-sm text-ink leading-relaxed">Most respondents reported smooth operation. Key themes: <strong>minor learning curve</strong> during first use (mentioned by 4 nurses), <strong>ergonomic grip</strong> praised by majority, and <strong>battery indicator</strong> noted as unclear by 2 respondents. No critical safety concerns raised.</p>
+          </div>
+          <div class="font-mono text-[9px] font-bold text-ink-muted uppercase tracking-[.08em] mb-2">ALL RESPONSES (${mockEvals.length})</div>
+          <div class="max-h-40 overflow-y-auto space-y-1.5">
+            ${mockEvals.slice(0,mockEvals.length).map((e,i) => {
+              const responses = [
+                'No major issues. Slight learning curve on first use.',
+                'Grip felt comfortable. Battery indicator could be clearer.',
+                'Worked great, no complaints.',
+                'Initial calibration took longer than expected.',
+                'Very intuitive after brief training.',
+                'Minor issue with locking mechanism, resolved quickly.',
+                'Excellent performance. Would use again.',
+                'Packaging was hard to open in sterile environment.',
+                'No issues encountered.',
+                'Slightly heavier than current device but manageable.',
+                'Setup instructions could be more visual.',
+                'Smooth operation throughout the procedure.',
+                'WiFi connectivity dropped once during use.',
+                'Great device overall. Minor UI lag on screen.'
+              ];
+              return `<div class="shadow-neu-in rounded-[6px] px-3 py-2 text-[11px]"><span class="text-ink-muted">${e.name}:</span> <span class="text-ink">${responses[i % responses.length]}</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <!-- Q4: Yes/No -->
+        <div class="shadow-neu-in rounded-[12px] p-4">
+          <div class="font-mono text-[10px] font-bold text-ink-muted mb-1">Q4: Would you recommend this device for adoption?</div>
+          <div class="font-mono text-[9px] text-ink-muted mb-3">TYPE: YES / NO</div>
+          ${(() => {
+            const recYes = Math.round(mockEvals.length * 0.78);
+            const recNo = mockEvals.length - recYes;
+            const recPct = Math.round(recYes/mockEvals.length*100);
+            return `<div class="flex items-center gap-6">
+              <div class="flex items-center gap-3">
+                <div class="w-16 h-16 rounded-full shadow-neu-sm bg-chassis flex items-center justify-center"><span class="font-mono text-lg font-bold text-green-600">${recPct}%</span></div>
+                <div><div class="font-mono text-[11px] font-bold text-green-600">YES</div><div class="font-mono text-[10px] text-ink-muted">${recYes} responses</div></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-16 h-16 rounded-full shadow-neu-sm bg-chassis flex items-center justify-center"><span class="font-mono text-lg font-bold text-red-500">${100-recPct}%</span></div>
+                <div><div class="font-mono text-[11px] font-bold text-red-500">NO</div><div class="font-mono text-[10px] text-ink-muted">${recNo} responses</div></div>
+              </div>
+            </div>`;
+          })()}
         </div>
       </div>
-      <!-- Evaluations -->
+
+      <!-- AI Overall Summary -->
+      <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-4">
+        <div class="flex items-center gap-2 mb-3"><span class="text-base">🤖</span><span class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted">AI TRIAL SUMMARY</span></div>
+        <div class="shadow-neu-in rounded-[12px] p-4">
+          <p class="text-sm text-ink leading-relaxed mb-3">Based on <strong>${mockEvals.length} evaluations</strong> from ${new Set(mockEvals.map(e=>e.unit)).size} hospital units, the <strong>${t.product}</strong> received generally positive feedback.</p>
+          <p class="text-sm text-ink leading-relaxed mb-3"><strong>Key findings:</strong> Average usability rated <strong>${avgRating}/5.0</strong>. ${yesRate}% of evaluators found it superior to their current solution. 78% would recommend for adoption.</p>
+          <p class="text-sm text-ink leading-relaxed mb-3"><strong>Concerns:</strong> Minor learning curve reported during initial use. Battery indicator clarity was noted by multiple respondents. One connectivity issue reported.</p>
+          <p class="text-sm text-ink leading-relaxed"><strong>Recommendation:</strong> Results support proceeding with adoption consideration. Manufacturer should address battery indicator UX and provide comprehensive training materials.</p>
+        </div>
+      </div>
+
+      <!-- Individual Nurse Responses -->
       <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws">
-        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">RECENT EVALUATIONS</div>
-        <div class="overflow-x-auto"><table class="w-full font-mono text-[11px]"><thead><tr class="text-ink-muted border-b-2 border-muted">
-          <th class="text-left py-2 px-2">#</th><th class="text-left py-2 px-2">Name</th><th class="text-left py-2 px-2">Unit</th><th class="text-left py-2 px-2">Role</th><th class="text-left py-2 px-2">Date</th><th class="text-center py-2 px-2">Usability</th><th class="text-center py-2 px-2">Better?</th>
-        </tr></thead><tbody>${mockEvals.slice(0,10).map(e=>`
-          <tr class="border-b border-muted/30"><td class="py-2 px-2 text-ink-muted">${e.id}</td><td class="py-2 px-2 text-ink">${e.name}</td><td class="py-2 px-2">${e.unit}</td><td class="py-2 px-2">${e.role}</td><td class="py-2 px-2">${e.date}</td><td class="py-2 px-2 text-center font-bold">${e.q1}/5</td><td class="py-2 px-2 text-center ${e.q2==='Yes'?'text-green-600':'text-red-500'}">${e.q2}</td></tr>`).join('')}
-        </tbody></table></div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted">👤 INDIVIDUAL RESPONSES (${mockEvals.length})</div>
+        </div>
+        <div class="space-y-2 max-h-[500px] overflow-y-auto">
+          ${mockEvals.map(e => {
+            const openResponses = ['No major issues. Slight learning curve.','Grip comfortable. Battery indicator unclear.','Worked great, no complaints.','Calibration took longer than expected.','Very intuitive after training.','Minor locking mechanism issue.','Excellent performance.','Packaging hard to open in sterile env.','No issues.','Slightly heavier but manageable.','Instructions could be more visual.','Smooth operation.','WiFi dropped once.','Great overall. Minor UI lag.'];
+            return `
+            <div class="shadow-neu-in rounded-[8px] p-3">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[11px] font-bold text-ink">${e.name}</span>
+                  <span class="font-mono text-[9px] text-ink-muted">${e.role}</span>
+                  <span class="font-mono text-[9px] text-ink-muted">· ${e.unit}</span>
+                </div>
+                <span class="font-mono text-[10px] text-ink-muted">${e.date}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div><span class="text-ink-muted">Q1 Usability:</span> <span class="font-bold">${e.q1}/5</span></div>
+                <div><span class="text-ink-muted">Q2 Better?:</span> <span class="font-bold ${e.q2==='Yes'?'text-green-600':'text-red-500'}">${e.q2}</span></div>
+                <div class="col-span-2"><span class="text-ink-muted">Q3 Issues:</span> <span>${openResponses[(e.id-1) % openResponses.length]}</span></div>
+                <div><span class="text-ink-muted">Q4 Recommend?:</span> <span class="font-bold ${Math.random()>.22?'text-green-600':'text-red-500'}">${Math.random()>.22?'Yes':'No'}</span></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
       </div>
     </div>
     <div>
