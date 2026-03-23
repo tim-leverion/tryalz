@@ -265,6 +265,18 @@ input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 4px 4px 8p
   </div>
   <div id="nurse-form" class="space-y-4">
     <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">YOUR NAME *</label>
+      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Sarah Johnson">
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">HOSPITAL UNIT / DEPARTMENT *</label>
+      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Surgical Unit, ICU, Cardiology">
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">YOUR ROLE</label>
+      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Registered Nurse, Nurse Practitioner">
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
       <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">Q1: How would you rate the overall usability?</label>
       <div class="flex gap-2">
         <button onclick="selectRating(this,1)" class="btn-press shadow-neu-sm rounded-[8px] w-12 h-12 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">1</button>
@@ -292,18 +304,6 @@ input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 4px 4px 8p
         <button onclick="selectYN(this,'yes')" class="btn-press shadow-neu-sm rounded-[8px] px-6 py-3 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">YES</button>
         <button onclick="selectYN(this,'no')" class="btn-press shadow-neu-sm rounded-[8px] px-6 py-3 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">NO</button>
       </div>
-    </div>
-    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
-      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">YOUR NAME *</label>
-      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Sarah Johnson">
-    </div>
-    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
-      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">HOSPITAL UNIT / DEPARTMENT *</label>
-      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Surgical Unit, ICU, Cardiology">
-    </div>
-    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
-      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">YOUR ROLE</label>
-      <input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. Registered Nurse, Nurse Practitioner">
     </div>
     <button onclick="submitEval()" class="btn-press w-full py-4 bg-accent rounded-[16px] cursor-pointer hover:bg-accent-hover shadow-[4px_4px_8px_rgba(37,99,235,.3)]">
       <span class="font-mono text-white text-sm font-bold uppercase tracking-[.05em]">✓ SUBMIT EVALUATION</span>
