@@ -798,16 +798,24 @@ function renderTrialDetail(id) {
       </div>
     </div>
     <div>
-      ${t.status==='completed'?`
       <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-4">
-        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">FINAL DECISION</div>
-        ${t.decision?`<span class="status-badge s-${t.decision} text-sm">${t.decision.toUpperCase()}</span>`:`
-        <div class="space-y-2">
-          <button onclick="setDecision(${t.id},'adopted')" class="btn-press w-full py-2.5 bg-green-600 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer">✓ ADOPT</button>
-          <button onclick="setDecision(${t.id},'declined')" class="btn-press w-full py-2.5 bg-red-500 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer">✕ DECLINE</button>
-          <button onclick="setDecision(${t.id},'deferred')" class="btn-press w-full py-2.5 bg-yellow-500 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer">⏸ DEFER</button>
-        </div>`}
-      </div>`:``}
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">📋 TRIAL DECISION</div>
+        ${t.decision?`
+          <div class="mb-3"><span class="status-badge s-${t.decision} text-sm">${t.decision.toUpperCase()}</span></div>
+          ${t.decisionNotes?`<div class="shadow-neu-in rounded-[8px] p-3"><div class="font-mono text-[9px] text-ink-muted uppercase mb-1">DECISION NOTES</div><p class="text-sm text-ink">${t.decisionNotes}</p></div>`:''}
+        `:`
+          <div class="mb-3">
+            <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">DECISION NOTES</div>
+            <textarea id="decision-notes-${t.id}" class="shadow-neu-in rounded-[8px] w-full px-3 py-2 bg-chassis font-mono text-[12px] h-24" placeholder="Add rationale for the decision..."></textarea>
+          </div>
+          <div class="space-y-2">
+            <button onclick="setDecision(${t.id},'adopted')" class="btn-press w-full py-2.5 bg-green-600 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer hover:bg-green-700">✓ ADOPT — Approve for use</button>
+            <button onclick="setDecision(${t.id},'declined')" class="btn-press w-full py-2.5 bg-red-500 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer hover:bg-red-600">✕ DECLINE — Do not proceed</button>
+            <button onclick="setDecision(${t.id},'deferred')" class="btn-press w-full py-2.5 bg-yellow-500 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer hover:bg-yellow-600">⏸ DEFER — Revisit later</button>
+            <button onclick="setDecision(${t.id},'more_info_needed')" class="btn-press w-full py-2.5 shadow-neu-sm rounded-[8px] bg-chassis font-mono text-[11px] font-bold text-ink-muted cursor-pointer hover:text-accent">? MORE INFO NEEDED</button>
+          </div>
+          ${t.status==='active'?`<div class="mt-3 shadow-neu-in rounded-[6px] p-2"><p class="font-mono text-[10px] text-ink-muted text-center">⚠ Closing an active trial will end evaluation collection</p></div>`:''}`}
+      </div>
       <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-4">
         <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">QR CODE</div>
         <div class="bg-white rounded-lg p-4 text-center"><div class="w-28 h-28 mx-auto bg-[repeating-conic-gradient(#000_0%_25%,#fff_0%_50%)] bg-[length:8px_8px]"></div></div>
@@ -834,7 +842,16 @@ function reviewAction(action, id) {
 }
 function setDecision(id, decision) {
   const t = TRIALS.find(x=>x.id===id);
-  if(t) { t.decision = decision; alert(`Trial marked as: ${decision}`); navigate('trial-detail', id); }
+  if(!t) return;
+  const notesEl = document.getElementById('decision-notes-' + id);
+  const notes = notesEl ? notesEl.value : '';
+  if (!notes.trim() && !confirm('No decision notes provided. Continue anyway?')) return;
+  t.decision = decision;
+  t.decisionNotes = notes;
+  if (t.status === 'active') t.status = 'closed';
+  else t.status = 'closed';
+  alert(`Trial marked as: ${decision.replace('_',' ').toUpperCase()}`);
+  navigate('trial-detail', id);
 }
 function submitRequest() {
   const form = document.querySelector('[data-page="new-request"]');
