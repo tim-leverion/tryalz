@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tryalz — Medical Device Trial Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{chassis:'#e0e5ec',muted:'#d1d9e6',ink:'#2d3436','ink-muted':'#4a5568',accent:'#2563eb','accent-hover':'#1d4ed8','accent-light':'#dbeafe','border-shadow':'#babecc'},fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']},boxShadow:{neu:'8px 8px 16px #babecc, -8px -8px 16px #ffffff','neu-sm':'4px 4px 8px #babecc, -4px -4px 8px #ffffff','neu-float':'12px 12px 24px #babecc, -12px -12px 24px #ffffff','neu-pressed':'inset 6px 6px 12px #babecc, inset -6px -6px 12px #ffffff','neu-in':'inset 4px 4px 8px #babecc, inset -4px -4px 8px #ffffff'}}}}
+</script>
+<style>
+body{background:#e0e5ec;font-family:'Inter',sans-serif}
+body::before{content:'';position:fixed;inset:0;opacity:.03;mix-blend-mode:overlay;pointer-events:none;z-index:9999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.screws{background-image:radial-gradient(circle at 14px 14px,rgba(0,0,0,.12) 2px,transparent 3px),radial-gradient(circle at calc(100% - 14px) 14px,rgba(0,0,0,.12) 2px,transparent 3px),radial-gradient(circle at 14px calc(100% - 14px),rgba(0,0,0,.12) 2px,transparent 3px),radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),rgba(0,0,0,.12) 2px,transparent 3px)}
+.btn-press:active{transform:translateY(2px);box-shadow:inset 6px 6px 12px #babecc,inset -6px -6px 12px #ffffff}
+.card-lift{transition:all 300ms cubic-bezier(.175,.885,.32,1.275)}.card-lift:hover{transform:translateY(-2px);box-shadow:12px 12px 24px #babecc,-12px -12px 24px #fff}
+@keyframes led-pulse{0%,100%{opacity:1}50%{opacity:.4}}.led-pulse{animation:led-pulse 2s infinite}
+[data-page]{display:none}[data-page].active{display:block}
+.status-badge{font-family:'JetBrains Mono';font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+.s-draft{background:#f3f4f6;color:#6b7280}.s-submitted{background:#dbeafe;color:#2563eb}.s-under_review{background:#fef3c7;color:#d97706}.s-approved{background:#d1fae5;color:#059669}.s-rejected{background:#fee2e2;color:#dc2626}.s-changes_requested{background:#fce7f3;color:#db2777}.s-active{background:#d1fae5;color:#059669}.s-completed{background:#e0e7ff;color:#4f46e5}.s-closed{background:#f3f4f6;color:#6b7280}
+.s-adopted{background:#d1fae5;color:#059669}.s-declined{background:#fee2e2;color:#dc2626}.s-deferred{background:#fef3c7;color:#d97706}
+input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 4px 4px 8px #babecc,inset -4px -4px 8px #ffffff,0 0 0 2px #2563eb}
+</style>
+</head>
+<body class="text-ink min-h-screen">
+
+<!-- APP -->
+<div id="app">
+
+<!-- ========== LOGIN ========== -->
+<div data-page="login" class="active min-h-screen flex items-center justify-center p-4">
+<div class="shadow-neu rounded-[24px] p-10 screws max-w-md w-full bg-chassis">
+  <div class="text-center mb-8">
+    <div class="flex items-center justify-center gap-2 mb-4">
+      <div class="w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_2px_rgba(37,99,235,.5)] led-pulse"></div>
+      <h1 class="text-2xl font-extrabold tracking-tight text-ink drop-shadow-[0_1px_0_#fff]">TRYALZ</h1>
+    </div>
+    <p class="text-sm text-ink-muted">Medical Device Trial Management</p>
+  </div>
+  <div class="mb-5">
+    <label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-2">SIGN IN AS</label>
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="setRole('sales')" id="role-sales" class="btn-press shadow-neu-sm rounded-[12px] p-4 bg-chassis cursor-pointer text-center transition-all border-2 border-transparent hover:border-accent">
+        <div class="text-2xl mb-1">💼</div>
+        <div class="font-mono text-[10px] font-bold text-ink-muted">SALES REP</div>
+      </button>
+      <button onclick="setRole('va')" id="role-va" class="btn-press shadow-neu-sm rounded-[12px] p-4 bg-chassis cursor-pointer text-center transition-all border-2 border-transparent hover:border-accent">
+        <div class="text-2xl mb-1">🏥</div>
+        <div class="font-mono text-[10px] font-bold text-ink-muted">VALUE ANALYSIS</div>
+      </button>
+    </div>
+  </div>
+  <div class="mb-4">
+    <label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-2">EMAIL</label>
+    <input type="email" id="login-email" class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px] text-ink border-none" placeholder="you@hospital.com">
+  </div>
+  <div class="mb-6">
+    <label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-2">PASSWORD</label>
+    <input type="password" id="login-pass" class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px] text-ink border-none" placeholder="••••••••">
+  </div>
+  <button onclick="doLogin()" class="btn-press w-full py-4 bg-accent rounded-[16px] cursor-pointer transition-all hover:bg-accent-hover shadow-[4px_4px_8px_rgba(37,99,235,.3),-4px_-4px_8px_rgba(96,165,250,.2)]">
+    <span class="font-mono text-white text-sm font-bold uppercase tracking-[.05em]">🔐 SIGN IN</span>
+  </button>
+  <div class="mt-4 text-center">
+    <a href="#nurse-eval" onclick="navigate('nurse-eval')" class="font-mono text-[11px] text-accent hover:underline">🩺 I'm a nurse — fill out an evaluation</a>
+  </div>
+</div>
+</div>
+
+<!-- ========== HEADER (shared) ========== -->
+<template id="tpl-header">
+<header class="shadow-neu rounded-[16px] p-4 mb-6 bg-chassis flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_10px_2px_rgba(37,99,235,.5)] led-pulse"></div>
+    <h1 class="text-lg font-extrabold tracking-tight text-ink drop-shadow-[0_1px_0_#fff]">TRYALZ</h1>
+    <span class="font-mono text-[10px] text-ink-muted ml-2" id="header-role"></span>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="font-mono text-[11px] text-ink-muted" id="header-user"></span>
+    <button onclick="doLogout()" class="btn-press shadow-neu-sm rounded-[8px] px-3 py-1.5 bg-chassis font-mono text-[10px] font-bold text-ink-muted cursor-pointer hover:text-accent">LOGOUT</button>
+  </div>
+</header>
+</template>
+
+<!-- ========== SALES REP DASHBOARD ========== -->
+<div data-page="sales-dash" class="max-w-6xl mx-auto px-4 py-6">
+  <div id="sales-header"></div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">TOTAL REQUESTS</div>
+      <div class="font-mono text-3xl font-bold text-ink drop-shadow-[0_1px_0_#fff]" id="s-total">0</div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">APPROVED</div>
+      <div class="font-mono text-3xl font-bold text-green-600 drop-shadow-[0_1px_0_#fff]" id="s-approved">0</div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">ACTIVE TRIALS</div>
+      <div class="font-mono text-3xl font-bold text-accent drop-shadow-[0_1px_0_#fff]" id="s-active">0</div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">PENDING REVIEW</div>
+      <div class="font-mono text-3xl font-bold text-yellow-600 drop-shadow-[0_1px_0_#fff]" id="s-pending">0</div>
+    </div>
+  </div>
+  <!-- Actions -->
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="font-bold text-base text-ink drop-shadow-[0_1px_0_#fff]">My Trial Requests</h2>
+    <button onclick="navigate('new-request')" class="btn-press shadow-neu-sm rounded-[12px] px-5 py-2.5 bg-accent text-white font-mono text-xs font-bold uppercase tracking-[.05em] cursor-pointer hover:bg-accent-hover">+ NEW REQUEST</button>
+  </div>
+  <!-- Requests List -->
+  <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="font-mono text-[10px] text-ink-muted uppercase tracking-wider border-b-2 border-muted">
+          <th class="text-left py-2 px-2">Product</th><th class="text-left py-2 px-2">Hospital</th><th class="text-left py-2 px-2">Status</th><th class="text-left py-2 px-2">Submitted</th><th class="text-right py-2 px-2">Action</th>
+        </tr></thead>
+        <tbody id="sales-requests-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== NEW REQUEST FORM ========== -->
+<div data-page="new-request" class="max-w-4xl mx-auto px-4 py-6">
+  <div id="newreq-header"></div>
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="navigate('sales-dash')" class="btn-press shadow-neu-sm rounded-[8px] px-3 py-1.5 bg-chassis font-mono text-xs font-bold text-ink-muted cursor-pointer">← BACK</button>
+    <h2 class="font-bold text-lg text-ink drop-shadow-[0_1px_0_#fff]">New Trial Request</h2>
+  </div>
+  <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-6">
+    <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">PRODUCT INFORMATION</div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Device/Product Name *</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. SmartSuture Pro X200"></div>
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Manufacturer *</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="e.g. MedTech Solutions Inc."></div>
+    </div>
+    <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">SPONSOR INFORMATION</div>
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Sponsor Name *</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="Dr. Sarah Chen"></div>
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Title</label><input class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="Head of Surgery"></div>
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Hospital *</label>
+        <select class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]"><option>Select hospital...</option><option>Metro General Hospital</option><option>Riverside Medical Center</option><option>Lakewood Community Hospital</option><option>Valley Health Clinic</option></select>
+      </div>
+    </div>
+    <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">TRIAL DETAILS</div>
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Requested Start</label><input type="date" class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]"></div>
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Duration (days)</label><input type="number" class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="30" value="30"></div>
+      <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Required Evaluations</label><input type="number" class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]" placeholder="20" value="20"></div>
+    </div>
+    <div><label class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-1">Notes</label><textarea class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px] h-20" placeholder="Additional context..."></textarea></div>
+  </div>
+  <!-- Questionnaire Builder -->
+  <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-6">
+    <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">EVALUATION QUESTIONNAIRE</div>
+    <div id="question-builder" class="space-y-3 mb-4">
+      <div class="shadow-neu-in rounded-[8px] p-4 bg-chassis flex items-center gap-3">
+        <span class="font-mono text-[10px] text-ink-muted font-bold w-6">Q1</span>
+        <input class="flex-1 bg-transparent font-mono text-[12px] outline-none" placeholder="Question text..." value="How would you rate the overall usability of this device?">
+        <select class="shadow-neu-in rounded px-2 py-1 bg-chassis font-mono text-[10px]"><option>Rating 1-5</option><option>Yes/No</option><option>Text</option><option>Multiple Choice</option></select>
+      </div>
+      <div class="shadow-neu-in rounded-[8px] p-4 bg-chassis flex items-center gap-3">
+        <span class="font-mono text-[10px] text-ink-muted font-bold w-6">Q2</span>
+        <input class="flex-1 bg-transparent font-mono text-[12px] outline-none" value="Did the device perform better than your current solution?">
+        <select class="shadow-neu-in rounded px-2 py-1 bg-chassis font-mono text-[10px]"><option>Yes/No</option><option>Rating 1-5</option><option>Text</option><option>Multiple Choice</option></select>
+      </div>
+      <div class="shadow-neu-in rounded-[8px] p-4 bg-chassis flex items-center gap-3">
+        <span class="font-mono text-[10px] text-ink-muted font-bold w-6">Q3</span>
+        <input class="flex-1 bg-transparent font-mono text-[12px] outline-none" value="Please describe any issues encountered during use.">
+        <select class="shadow-neu-in rounded px-2 py-1 bg-chassis font-mono text-[10px]"><option>Text</option><option>Rating 1-5</option><option>Yes/No</option><option>Multiple Choice</option></select>
+      </div>
+    </div>
+    <button onclick="addQuestion()" class="btn-press shadow-neu-sm rounded-[8px] px-4 py-2 bg-chassis font-mono text-[11px] font-bold text-accent cursor-pointer">+ ADD QUESTION</button>
+  </div>
+  <div class="flex gap-4 justify-end">
+    <button class="btn-press shadow-neu-sm rounded-[12px] px-6 py-3 bg-chassis font-mono text-xs font-bold text-ink-muted cursor-pointer">SAVE DRAFT</button>
+    <button onclick="submitRequest()" class="btn-press shadow-neu-sm rounded-[12px] px-6 py-3 bg-accent text-white font-mono text-xs font-bold cursor-pointer hover:bg-accent-hover">SUBMIT REQUEST →</button>
+  </div>
+</div>
+
+<!-- ========== REQUEST DETAIL ========== -->
+<div data-page="request-detail" class="max-w-4xl mx-auto px-4 py-6">
+  <div id="reqdet-header"></div>
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="navigateBack()" class="btn-press shadow-neu-sm rounded-[8px] px-3 py-1.5 bg-chassis font-mono text-xs font-bold text-ink-muted cursor-pointer">← BACK</button>
+    <h2 class="font-bold text-lg text-ink drop-shadow-[0_1px_0_#fff]" id="rd-title">Request Detail</h2>
+  </div>
+  <div id="request-detail-content"></div>
+</div>
+
+<!-- ========== VA TEAM DASHBOARD ========== -->
+<div data-page="va-dash" class="max-w-6xl mx-auto px-4 py-6">
+  <div id="va-header"></div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">PENDING REVIEW</div>
+      <div class="font-mono text-3xl font-bold text-yellow-600" id="va-pending">0</div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">ACTIVE TRIALS</div>
+      <div class="font-mono text-3xl font-bold text-accent" id="va-active">0</div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">COMPLETED</div>
+      <div class="font-mono text-3xl font-bold text-green-600" id="va-completed">0</div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift">
+      <div class="font-mono text-[9px] font-bold uppercase tracking-[.08em] text-ink-muted mb-2">TOTAL TRIALS</div>
+      <div class="font-mono text-3xl font-bold text-ink" id="va-total">0</div>
+    </div>
+  </div>
+  <!-- Review Queue -->
+  <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-6">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="font-bold text-base text-ink">📋 Review Queue</h2>
+      <div class="flex-1 h-[2px] rounded-full bg-muted shadow-[inset_0_1px_3px_rgba(0,0,0,.15)] ml-3"></div>
+    </div>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="font-mono text-[10px] text-ink-muted uppercase tracking-wider border-b-2 border-muted">
+      <th class="text-left py-2 px-2">Product</th><th class="text-left py-2 px-2">Sales Rep</th><th class="text-left py-2 px-2">Hospital</th><th class="text-left py-2 px-2">Status</th><th class="text-left py-2 px-2">Submitted</th><th class="text-right py-2 px-2">Action</th>
+    </tr></thead><tbody id="va-review-queue"></tbody></table></div>
+  </div>
+  <!-- Active Trials -->
+  <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws">
+    <div class="flex items-center gap-3 mb-4">
+      <h2 class="font-bold text-base text-ink">🔬 Active & Historical Trials</h2>
+      <div class="flex-1 h-[2px] rounded-full bg-muted shadow-[inset_0_1px_3px_rgba(0,0,0,.15)] ml-3"></div>
+    </div>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="font-mono text-[10px] text-ink-muted uppercase tracking-wider border-b-2 border-muted">
+      <th class="text-left py-2 px-2">Product</th><th class="text-left py-2 px-2">Hospital</th><th class="text-left py-2 px-2">Progress</th><th class="text-left py-2 px-2">Status</th><th class="text-left py-2 px-2">Decision</th><th class="text-right py-2 px-2">Action</th>
+    </tr></thead><tbody id="va-trials-list"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ========== VA REVIEW PAGE ========== -->
+<div data-page="va-review" class="max-w-4xl mx-auto px-4 py-6">
+  <div id="review-header"></div>
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="navigate('va-dash')" class="btn-press shadow-neu-sm rounded-[8px] px-3 py-1.5 bg-chassis font-mono text-xs font-bold text-ink-muted cursor-pointer">← BACK</button>
+    <h2 class="font-bold text-lg text-ink drop-shadow-[0_1px_0_#fff]">Request Review</h2>
+  </div>
+  <div id="va-review-content"></div>
+</div>
+
+<!-- ========== TRIAL DETAIL (VA) ========== -->
+<div data-page="trial-detail" class="max-w-5xl mx-auto px-4 py-6">
+  <div id="trial-header"></div>
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="navigateBack()" class="btn-press shadow-neu-sm rounded-[8px] px-3 py-1.5 bg-chassis font-mono text-xs font-bold text-ink-muted cursor-pointer">← BACK</button>
+    <h2 class="font-bold text-lg text-ink drop-shadow-[0_1px_0_#fff]" id="td-title">Trial Detail</h2>
+  </div>
+  <div id="trial-detail-content"></div>
+</div>
+
+<!-- ========== NURSE EVALUATION ========== -->
+<div data-page="nurse-eval" class="max-w-lg mx-auto px-4 py-6">
+  <div class="shadow-neu rounded-[24px] p-6 bg-chassis screws mb-4">
+    <div class="flex items-center gap-2 mb-1"><div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_2px_rgba(37,99,235,.5)] led-pulse"></div><span class="font-mono text-[10px] font-bold text-ink-muted tracking-[.08em]">TRYALZ EVALUATION</span></div>
+    <h2 class="font-bold text-lg text-ink mb-1 drop-shadow-[0_1px_0_#fff]">SmartSuture Pro X200</h2>
+    <p class="font-mono text-[11px] text-ink-muted">Metro General Hospital · Surgical Department</p>
+    <p class="font-mono text-[11px] text-ink-muted">Trial: Mar 1 – Mar 30, 2026</p>
+  </div>
+  <div id="nurse-form" class="space-y-4">
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">Q1: How would you rate the overall usability?</label>
+      <div class="flex gap-2">
+        <button onclick="selectRating(this,1)" class="btn-press shadow-neu-sm rounded-[8px] w-12 h-12 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">1</button>
+        <button onclick="selectRating(this,2)" class="btn-press shadow-neu-sm rounded-[8px] w-12 h-12 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">2</button>
+        <button onclick="selectRating(this,3)" class="btn-press shadow-neu-sm rounded-[8px] w-12 h-12 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">3</button>
+        <button onclick="selectRating(this,4)" class="btn-press shadow-neu-sm rounded-[8px] w-12 h-12 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">4</button>
+        <button onclick="selectRating(this,5)" class="btn-press shadow-neu-sm rounded-[8px] w-12 h-12 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">5</button>
+      </div>
+      <div class="flex justify-between font-mono text-[9px] text-ink-muted mt-1"><span>Poor</span><span>Excellent</span></div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">Q2: Did the device perform better than your current solution?</label>
+      <div class="flex gap-3">
+        <button onclick="selectYN(this,'yes')" class="btn-press shadow-neu-sm rounded-[8px] px-6 py-3 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">YES</button>
+        <button onclick="selectYN(this,'no')" class="btn-press shadow-neu-sm rounded-[8px] px-6 py-3 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">NO</button>
+      </div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">Q3: Describe any issues encountered during use</label>
+      <textarea class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px] h-24" placeholder="Your feedback..."></textarea>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">Q4: Would you recommend this device for adoption?</label>
+      <div class="flex gap-3">
+        <button onclick="selectYN(this,'yes')" class="btn-press shadow-neu-sm rounded-[8px] px-6 py-3 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">YES</button>
+        <button onclick="selectYN(this,'no')" class="btn-press shadow-neu-sm rounded-[8px] px-6 py-3 bg-chassis font-mono text-sm font-bold cursor-pointer hover:text-accent">NO</button>
+      </div>
+    </div>
+    <div class="shadow-neu rounded-[16px] p-5 bg-chassis">
+      <label class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted block mb-3">OPTIONAL: Your role</label>
+      <select class="shadow-neu-in rounded-[8px] w-full px-4 py-3 bg-chassis font-mono text-[13px]"><option>Select...</option><option>Registered Nurse</option><option>Surgical Nurse</option><option>Nurse Practitioner</option><option>Clinical Specialist</option></select>
+    </div>
+    <button onclick="submitEval()" class="btn-press w-full py-4 bg-accent rounded-[16px] cursor-pointer hover:bg-accent-hover shadow-[4px_4px_8px_rgba(37,99,235,.3)]">
+      <span class="font-mono text-white text-sm font-bold uppercase tracking-[.05em]">✓ SUBMIT EVALUATION</span>
+    </button>
+  </div>
+  <!-- Confirmation -->
+  <div id="nurse-confirm" class="hidden">
+    <div class="shadow-neu rounded-[24px] p-8 bg-chassis text-center screws">
+      <div class="text-5xl mb-4">✅</div>
+      <h2 class="font-bold text-xl text-ink mb-2">Thank You!</h2>
+      <p class="text-ink-muted mb-4">Your evaluation has been submitted successfully.</p>
+      <p class="font-mono text-[11px] text-ink-muted">You may close this page.</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ===== MOCK DATA =====
+const HOSPITALS = ['Metro General Hospital','Riverside Medical Center','Lakewood Community Hospital','Valley Health Clinic'];
+const REQUESTS = [
+  {id:1,product:'SmartSuture Pro X200',manufacturer:'MedTech Solutions',sponsor:'Dr. Sarah Chen',sponsorTitle:'Head of Surgery',hospital:'Metro General Hospital',status:'approved',submitted:'2026-02-15',notes:'Advanced suturing device with haptic feedback.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'How would you rate the overall usability?',type:'rating'},{q:'Did the device perform better than your current solution?',type:'yesno',biasFlag:'Leading question — implies current solution is inferior'},{q:'Describe any issues encountered.',type:'text'},{q:'Would you recommend this device for adoption?',type:'yesno'}]},
+  {id:2,product:'CardioMonitor Elite',manufacturer:'HeartTech Inc.',sponsor:'Dr. Michael Torres',sponsorTitle:'Cardiology Director',hospital:'Riverside Medical Center',status:'under_review',submitted:'2026-03-10',notes:'Non-invasive cardiac monitoring with AI alerts.',duration:45,evalCount:30,salesRep:'John Miller',questions:[{q:'Rate the accuracy of readings compared to current monitors.',type:'rating'},{q:'This device is clearly superior to alternatives.',type:'rating',biasFlag:'Leading/biased phrasing — assumes superiority'},{q:'How easy was setup and calibration?',type:'rating'},{q:'Any connectivity issues?',type:'yesno'},{q:'Additional comments on reliability.',type:'text'}]},
+  {id:3,product:'FlexiCath Ultra',manufacturer:'VascuTech',sponsor:'Nurse Mgr. Lisa Park',sponsorTitle:'ICU Nurse Manager',hospital:'Metro General Hospital',status:'submitted',submitted:'2026-03-18',notes:'Flexible catheter with antimicrobial coating.',duration:21,evalCount:15,salesRep:'John Miller',questions:[{q:'Rate insertion ease.',type:'rating'},{q:'Patient comfort level observed?',type:'rating'},{q:'Any complications during use?',type:'text'}]},
+  {id:4,product:'WoundVac NextGen',manufacturer:'HealFast Medical',sponsor:'Dr. James Wright',sponsorTitle:'Wound Care Specialist',hospital:'Lakewood Community Hospital',status:'changes_requested',submitted:'2026-03-05',notes:'Negative pressure wound therapy device.',duration:30,evalCount:25,salesRep:'John Miller',reviewComment:'Please revise Q2 — currently biased toward positive outcomes. Also add a question about ease of dressing changes.',questions:[{q:'Overall satisfaction with wound healing outcomes?',type:'rating'},{q:'Don\'t you agree this device accelerates healing?',type:'yesno',biasFlag:'Leading question — presumes positive outcome'},{q:'Noise level during operation?',type:'rating'},{q:'Describe patient feedback.',type:'text'}]},
+  {id:5,product:'OrthoNav 3D',manufacturer:'BoneGuide Systems',sponsor:'Dr. Amy Patel',sponsorTitle:'Orthopedic Surgeon',hospital:'Valley Health Clinic',status:'rejected',submitted:'2026-02-28',notes:'3D navigation system for joint replacement.',duration:60,evalCount:10,salesRep:'Sarah Adams',reviewComment:'Product category already under active trial with a competitor device. Resubmit after current trial concludes.',questions:[{q:'Accuracy of navigation guidance?',type:'rating'},{q:'Surgical time comparison?',type:'text'}]},
+  {id:6,product:'InfuSmart Pump',manufacturer:'PrecisionFlow',sponsor:'Dr. Rachel Kim',sponsorTitle:'Anesthesiology Chair',hospital:'Metro General Hospital',status:'draft',submitted:'',notes:'AI-powered infusion pump with error detection.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'Rate ease of programming.',type:'rating'},{q:'Error detection accuracy?',type:'rating'}]},
+  {id:7,product:'BreatheEasy Ventilator',manufacturer:'AirMed Corp',sponsor:'Dr. Tom Richards',sponsorTitle:'Pulmonology Director',hospital:'Riverside Medical Center',status:'approved',submitted:'2026-01-20',notes:'Portable ventilator with adaptive pressure.',duration:45,evalCount:35,salesRep:'Sarah Adams',questions:[{q:'Patient comfort rating.',type:'rating'},{q:'Ease of transport?',type:'rating'},{q:'Battery life adequate?',type:'yesno'},{q:'Additional observations.',type:'text'}]},
+  {id:8,product:'SkinScope AI',manufacturer:'DermVision',sponsor:'Dr. Nina Volkov',sponsorTitle:'Dermatology Head',hospital:'Lakewood Community Hospital',status:'approved',submitted:'2026-02-01',notes:'AI-assisted dermatoscope for lesion analysis.',duration:30,evalCount:20,salesRep:'John Miller',questions:[{q:'Accuracy of AI analysis?',type:'rating'},{q:'Speed of diagnosis support?',type:'rating'},{q:'Would you trust AI-flagged results?',type:'yesno'},{q:'Usability notes.',type:'text'}]}
+];
+const TRIALS = [
+  {id:101,requestId:1,product:'SmartSuture Pro X200',hospital:'Metro General Hospital',start:'2026-03-01',end:'2026-03-30',target:20,completed:14,status:'active',decision:null},
+  {id:102,requestId:7,product:'BreatheEasy Ventilator',hospital:'Riverside Medical Center',start:'2026-02-01',end:'2026-03-15',target:35,completed:35,status:'completed',decision:'adopted'},
+  {id:103,requestId:8,product:'SkinScope AI',hospital:'Lakewood Community Hospital',start:'2026-02-15',end:'2026-03-15',target:20,completed:18,status:'completed',decision:'deferred'}
+];
+
+let currentRole = null, currentUser = null, navHistory = [];
+
+// ===== NAVIGATION =====
+function navigate(page, data) {
+  navHistory.push(page);
+  document.querySelectorAll('[data-page]').forEach(p => p.classList.remove('active'));
+  const el = document.querySelector(`[data-page="${page}"]`);
+  if (el) el.classList.add('active');
+  // inject headers
+  const headerIds = {'sales-dash':'sales-header','new-request':'newreq-header','request-detail':'reqdet-header','va-dash':'va-header','va-review':'review-header','trial-detail':'trial-header'};
+  if (headerIds[page]) {
+    const tpl = document.getElementById('tpl-header');
+    document.getElementById(headerIds[page]).innerHTML = tpl.innerHTML;
+    const roleLabel = currentRole === 'sales' ? 'SALES REP' : 'VALUE ANALYSIS TEAM';
+    document.getElementById(headerIds[page]).querySelector('#header-role').textContent = roleLabel;
+    document.getElementById(headerIds[page]).querySelector('#header-user').textContent = currentUser;
+  }
+  if (page === 'sales-dash') renderSalesDash();
+  if (page === 'va-dash') renderVADash();
+  if (page === 'request-detail') renderRequestDetail(data);
+  if (page === 'va-review') renderVAReview(data);
+  if (page === 'trial-detail') renderTrialDetail(data);
+  window.scrollTo(0,0);
+}
+function navigateBack() { navHistory.pop(); const prev = navHistory.pop() || (currentRole==='sales'?'sales-dash':'va-dash'); navigate(prev); }
+
+// ===== AUTH =====
+function setRole(r) { currentRole = r; document.querySelectorAll('#role-sales,#role-va').forEach(b=>b.classList.remove('border-accent')); document.getElementById('role-'+r).classList.add('border-accent'); }
+function doLogin() { if (!currentRole) { alert('Please select a role'); return; } currentUser = document.getElementById('login-email').value||'demo@hospital.com'; navigate(currentRole==='sales'?'sales-dash':'va-dash'); }
+function doLogout() { currentRole=null; navHistory=[]; navigate('login'); }
+
+// ===== SALES DASHBOARD =====
+function renderSalesDash() {
+  const myReqs = REQUESTS.filter(r => r.salesRep === 'John Miller');
+  document.getElementById('s-total').textContent = myReqs.length;
+  document.getElementById('s-approved').textContent = myReqs.filter(r=>r.status==='approved').length;
+  document.getElementById('s-active').textContent = TRIALS.filter(t=>t.status==='active').length;
+  document.getElementById('s-pending').textContent = myReqs.filter(r=>['submitted','under_review'].includes(r.status)).length;
+  document.getElementById('sales-requests-list').innerHTML = myReqs.map(r => `
+    <tr class="border-b border-muted/50 hover:bg-white/30 transition cursor-pointer" onclick="navigate('request-detail',${r.id})">
+      <td class="py-3 px-2"><div class="font-semibold text-ink">${r.product}</div><div class="font-mono text-[10px] text-ink-muted">${r.manufacturer}</div></td>
+      <td class="py-3 px-2 text-sm text-ink-muted">${r.hospital}</td>
+      <td class="py-3 px-2"><span class="status-badge s-${r.status}">${r.status.replace('_',' ')}</span></td>
+      <td class="py-3 px-2 font-mono text-[11px] text-ink-muted">${r.submitted||'—'}</td>
+      <td class="py-3 px-2 text-right"><span class="font-mono text-[11px] text-accent">View →</span></td>
+    </tr>`).join('');
+}
+
+// ===== REQUEST DETAIL =====
+function renderRequestDetail(id) {
+  const r = REQUESTS.find(x=>x.id===id); if(!r) return;
+  const trial = TRIALS.find(t=>t.requestId===id);
+  document.getElementById('rd-title').textContent = r.product;
+  let html = `
+    <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <span class="status-badge s-${r.status}">${r.status.replace('_',' ')}</span>
+        <span class="font-mono text-[10px] text-ink-muted">ID: TR-${String(r.id).padStart(4,'0')}</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product</span><span class="font-semibold">${r.product}</span></div>
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Manufacturer</span>${r.manufacturer}</div>
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Sponsor</span>${r.sponsor} — ${r.sponsorTitle}</div>
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Hospital</span>${r.hospital}</div>
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Duration</span>${r.duration} days</div>
+        <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Required Evaluations</span>${r.evalCount}</div>
+      </div>
+      ${r.notes?`<div class="mt-4"><span class="font-mono text-[9px] text-ink-muted uppercase block">Notes</span><p class="text-sm text-ink-muted">${r.notes}</p></div>`:''}
+      ${r.reviewComment?`<div class="mt-4 shadow-neu-in rounded-[8px] p-4"><span class="font-mono text-[9px] text-ink-muted uppercase block mb-1">REVIEWER COMMENT</span><p class="text-sm text-ink">${r.reviewComment}</p></div>`:''}
+    </div>`;
+  if (trial) {
+    const pct = Math.round(trial.completed/trial.target*100);
+    html += `
+    <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-4">
+      <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">TRIAL PROGRESS</div>
+      <div class="flex items-center gap-4 mb-4">
+        <span class="status-badge s-${trial.status}">${trial.status}</span>
+        <span class="font-mono text-[11px] text-ink-muted">${trial.start} → ${trial.end}</span>
+      </div>
+      <div class="mb-2 flex justify-between font-mono text-[11px]"><span class="text-ink-muted">Evaluations</span><span class="font-bold">${trial.completed}/${trial.target}</span></div>
+      <div class="shadow-neu-in rounded-full h-4 bg-chassis overflow-hidden"><div class="h-full rounded-full bg-accent transition-all" style="width:${pct}%"></div></div>
+      <div class="mt-4 shadow-neu-in rounded-[8px] p-4 text-center">
+        <div class="font-mono text-[9px] text-ink-muted uppercase mb-2">QR CODE / SHARE LINK</div>
+        <div class="bg-white rounded-lg p-4 inline-block mb-2"><div class="w-32 h-32 bg-[repeating-conic-gradient(#000_0%_25%,#fff_0%_50%)] bg-[length:8px_8px]"></div></div>
+        <div class="font-mono text-[11px] text-accent">https://tryalz.app/eval/TR-${String(r.id).padStart(4,'0')}</div>
+      </div>
+      ${trial.decision?`<div class="mt-4"><span class="font-mono text-[9px] text-ink-muted uppercase block mb-1">FINAL DECISION</span><span class="status-badge s-${trial.decision}">${trial.decision}</span></div>`:''}
+    </div>`;
+  }
+  // Questionnaire
+  html += `<div class="shadow-neu rounded-[16px] p-6 bg-chassis screws">
+    <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">QUESTIONNAIRE</div>
+    ${r.questions.map((q,i)=>`
+      <div class="shadow-neu-in rounded-[8px] p-4 mb-3 ${q.biasFlag?'border-l-4 border-yellow-500':''}">
+        <div class="flex items-start gap-2">
+          <span class="font-mono text-[10px] text-ink-muted font-bold">Q${i+1}</span>
+          <div class="flex-1">
+            <div class="text-sm text-ink">${q.q}</div>
+            <div class="font-mono text-[10px] text-ink-muted mt-1">${q.type}</div>
+            ${q.biasFlag?`<div class="mt-2 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,.5)]"></span><span class="font-mono text-[10px] text-yellow-700 font-bold">AI FLAG: ${q.biasFlag}</span></div>`:''}
+          </div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+  document.getElementById('request-detail-content').innerHTML = html;
+}
+
+// ===== VA DASHBOARD =====
+function renderVADash() {
+  const pending = REQUESTS.filter(r=>['submitted','under_review'].includes(r.status));
+  const active = TRIALS.filter(t=>t.status==='active');
+  const completed = TRIALS.filter(t=>t.status==='completed');
+  document.getElementById('va-pending').textContent = pending.length;
+  document.getElementById('va-active').textContent = active.length;
+  document.getElementById('va-completed').textContent = completed.length;
+  document.getElementById('va-total').textContent = TRIALS.length;
+  // Review queue
+  const reviewable = REQUESTS.filter(r=>['submitted','under_review','changes_requested'].includes(r.status));
+  document.getElementById('va-review-queue').innerHTML = reviewable.map(r=>`
+    <tr class="border-b border-muted/50 hover:bg-white/30 transition cursor-pointer" onclick="navigate('va-review',${r.id})">
+      <td class="py-3 px-2 font-semibold">${r.product}</td>
+      <td class="py-3 px-2 text-sm text-ink-muted">${r.salesRep}</td>
+      <td class="py-3 px-2 text-sm text-ink-muted">${r.hospital}</td>
+      <td class="py-3 px-2"><span class="status-badge s-${r.status}">${r.status.replace('_',' ')}</span></td>
+      <td class="py-3 px-2 font-mono text-[11px] text-ink-muted">${r.submitted}</td>
+      <td class="py-3 px-2 text-right"><span class="font-mono text-[11px] text-accent">Review →</span></td>
+    </tr>`).join('') || '<tr><td colspan="6" class="text-center py-6 text-ink-muted">No pending reviews</td></tr>';
+  // Trials
+  document.getElementById('va-trials-list').innerHTML = TRIALS.map(t=>{
+    const pct = Math.round(t.completed/t.target*100);
+    return `
+    <tr class="border-b border-muted/50 hover:bg-white/30 transition cursor-pointer" onclick="navigate('trial-detail',${t.id})">
+      <td class="py-3 px-2 font-semibold">${t.product}</td>
+      <td class="py-3 px-2 text-sm text-ink-muted">${t.hospital}</td>
+      <td class="py-3 px-2"><div class="flex items-center gap-2"><div class="w-20 shadow-neu-in rounded-full h-2 bg-chassis overflow-hidden"><div class="h-full rounded-full bg-accent" style="width:${pct}%"></div></div><span class="font-mono text-[10px]">${t.completed}/${t.target}</span></div></td>
+      <td class="py-3 px-2"><span class="status-badge s-${t.status}">${t.status}</span></td>
+      <td class="py-3 px-2">${t.decision?`<span class="status-badge s-${t.decision}">${t.decision}</span>`:'<span class="text-ink-muted text-sm">—</span>'}</td>
+      <td class="py-3 px-2 text-right"><span class="font-mono text-[11px] text-accent">View →</span></td>
+    </tr>`}).join('');
+}
+
+// ===== VA REVIEW =====
+function renderVAReview(id) {
+  const r = REQUESTS.find(x=>x.id===id); if(!r) return;
+  const biasCount = r.questions.filter(q=>q.biasFlag).length;
+  let html = `
+  <div class="grid lg:grid-cols-3 gap-4 mb-4">
+    <div class="lg:col-span-2">
+      <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-4">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">REQUEST DETAILS</div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product</span><span class="font-semibold">${r.product}</span></div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Manufacturer</span>${r.manufacturer}</div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Sponsor</span>${r.sponsor}</div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Hospital</span>${r.hospital}</div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Duration</span>${r.duration} days</div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Evaluations</span>${r.evalCount}</div>
+        </div>
+        ${r.notes?`<div class="mt-3"><span class="font-mono text-[9px] text-ink-muted uppercase block">Notes</span><p class="text-sm">${r.notes}</p></div>`:''}
+      </div>
+      <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-4">QUESTIONNAIRE (${r.questions.length} questions)</div>
+        ${r.questions.map((q,i)=>`
+          <div class="shadow-neu-in rounded-[8px] p-4 mb-3 ${q.biasFlag?'border-l-4 border-yellow-500':''}">
+            <div class="flex items-start gap-2">
+              <span class="font-mono text-[10px] text-ink-muted font-bold">Q${i+1}</span>
+              <div class="flex-1">
+                <div class="text-sm">${q.q}</div>
+                <div class="font-mono text-[10px] text-ink-muted mt-1">Type: ${q.type}</div>
+                ${q.biasFlag?`<div class="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-yellow-500"></span><span class="font-mono text-[10px] text-yellow-700 font-bold">⚠ AI BIAS FLAG</span></div><p class="font-mono text-[11px] text-yellow-800 mt-1">${q.biasFlag}</p></div>`:''}
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-4">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">🤖 AI REVIEW SUMMARY</div>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center"><span class="text-sm">Questions analyzed</span><span class="font-mono text-sm font-bold">${r.questions.length}</span></div>
+          <div class="flex justify-between items-center"><span class="text-sm">Bias flags</span><span class="font-mono text-sm font-bold ${biasCount?'text-yellow-600':'text-green-600'}">${biasCount}</span></div>
+          <div class="flex justify-between items-center"><span class="text-sm">Overall quality</span><span class="font-mono text-sm font-bold ${biasCount>1?'text-yellow-600':'text-green-600'}">${biasCount>1?'NEEDS REVIEW':'ACCEPTABLE'}</span></div>
+        </div>
+        ${biasCount?`<div class="mt-3 shadow-neu-in rounded-[8px] p-3"><p class="font-mono text-[10px] text-yellow-700">⚠ ${biasCount} question(s) flagged for potential bias. Review recommended before approval.</p></div>`:''}
+      </div>
+      <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-4">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">REVIEWER COMMENT</div>
+        <textarea class="shadow-neu-in rounded-[8px] w-full px-3 py-2 bg-chassis font-mono text-[12px] h-24" placeholder="Add comment...">${r.reviewComment||''}</textarea>
+      </div>
+      <div class="space-y-2">
+        <button onclick="reviewAction('approved',${r.id})" class="btn-press w-full py-3 bg-green-600 rounded-[12px] text-white font-mono text-xs font-bold cursor-pointer hover:bg-green-700">✓ APPROVE</button>
+        <button onclick="reviewAction('changes_requested',${r.id})" class="btn-press w-full py-3 bg-yellow-500 rounded-[12px] text-white font-mono text-xs font-bold cursor-pointer hover:bg-yellow-600">✏ REQUEST CHANGES</button>
+        <button onclick="reviewAction('rejected',${r.id})" class="btn-press w-full py-3 bg-red-500 rounded-[12px] text-white font-mono text-xs font-bold cursor-pointer hover:bg-red-600">✕ REJECT</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('va-review-content').innerHTML = html;
+}
+
+// ===== TRIAL DETAIL =====
+function renderTrialDetail(id) {
+  const t = TRIALS.find(x=>x.id===id); if(!t) return;
+  const r = REQUESTS.find(x=>x.id===t.requestId);
+  const pct = Math.round(t.completed/t.target*100);
+  document.getElementById('td-title').textContent = t.product;
+  const mockEvals = Array.from({length:t.completed},(_,i)=>({id:i+1,date:`2026-03-${String(1+i%28).padStart(2,'0')}`,role:['RN','Surgical Nurse','NP','Clinical Spec'][i%4],q1:3+Math.round(Math.random()*2),q2:Math.random()>.3?'Yes':'No'}));
+  const avgRating = (mockEvals.reduce((s,e)=>s+e.q1,0)/mockEvals.length).toFixed(1);
+  const yesRate = Math.round(mockEvals.filter(e=>e.q2==='Yes').length/mockEvals.length*100);
+  let html = `
+  <div class="grid lg:grid-cols-3 gap-4 mb-4">
+    <div class="lg:col-span-2">
+      <div class="shadow-neu rounded-[16px] p-6 bg-chassis screws mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <span class="status-badge s-${t.status}">${t.status}</span>
+          <span class="font-mono text-[10px] text-ink-muted">${t.start} → ${t.end}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Product</span><span class="font-semibold">${t.product}</span></div>
+          <div><span class="font-mono text-[9px] text-ink-muted uppercase block">Hospital</span>${t.hospital}</div>
+        </div>
+        <div class="mb-2 flex justify-between font-mono text-[11px]"><span class="text-ink-muted">Evaluations</span><span class="font-bold">${t.completed}/${t.target} (${pct}%)</span></div>
+        <div class="shadow-neu-in rounded-full h-5 bg-chassis overflow-hidden"><div class="h-full rounded-full bg-accent transition-all flex items-center justify-center" style="width:${pct}%"><span class="font-mono text-[9px] text-white font-bold">${pct}%</span></div></div>
+      </div>
+      <!-- Summary Charts -->
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift text-center">
+          <div class="font-mono text-[9px] text-ink-muted uppercase mb-2">AVG USABILITY RATING</div>
+          <div class="font-mono text-4xl font-bold text-accent">${avgRating}</div>
+          <div class="font-mono text-[10px] text-ink-muted">out of 5.0</div>
+        </div>
+        <div class="shadow-neu rounded-[16px] p-5 bg-chassis card-lift text-center">
+          <div class="font-mono text-[9px] text-ink-muted uppercase mb-2">BETTER THAN CURRENT</div>
+          <div class="font-mono text-4xl font-bold text-green-600">${yesRate}%</div>
+          <div class="font-mono text-[10px] text-ink-muted">said yes</div>
+        </div>
+      </div>
+      <!-- Evaluations -->
+      <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">RECENT EVALUATIONS</div>
+        <div class="overflow-x-auto"><table class="w-full font-mono text-[11px]"><thead><tr class="text-ink-muted border-b-2 border-muted">
+          <th class="text-left py-2 px-2">#</th><th class="text-left py-2 px-2">Date</th><th class="text-left py-2 px-2">Role</th><th class="text-center py-2 px-2">Usability</th><th class="text-center py-2 px-2">Better?</th>
+        </tr></thead><tbody>${mockEvals.slice(0,10).map(e=>`
+          <tr class="border-b border-muted/30"><td class="py-2 px-2 text-ink-muted">${e.id}</td><td class="py-2 px-2">${e.date}</td><td class="py-2 px-2">${e.role}</td><td class="py-2 px-2 text-center font-bold">${e.q1}/5</td><td class="py-2 px-2 text-center ${e.q2==='Yes'?'text-green-600':'text-red-500'}">${e.q2}</td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+    <div>
+      ${t.status==='completed'?`
+      <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-4">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">FINAL DECISION</div>
+        ${t.decision?`<span class="status-badge s-${t.decision} text-sm">${t.decision.toUpperCase()}</span>`:`
+        <div class="space-y-2">
+          <button onclick="setDecision(${t.id},'adopted')" class="btn-press w-full py-2.5 bg-green-600 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer">✓ ADOPT</button>
+          <button onclick="setDecision(${t.id},'declined')" class="btn-press w-full py-2.5 bg-red-500 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer">✕ DECLINE</button>
+          <button onclick="setDecision(${t.id},'deferred')" class="btn-press w-full py-2.5 bg-yellow-500 rounded-[8px] text-white font-mono text-[11px] font-bold cursor-pointer">⏸ DEFER</button>
+        </div>`}
+      </div>`:``}
+      <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws mb-4">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">QR CODE</div>
+        <div class="bg-white rounded-lg p-4 text-center"><div class="w-28 h-28 mx-auto bg-[repeating-conic-gradient(#000_0%_25%,#fff_0%_50%)] bg-[length:8px_8px]"></div></div>
+        <div class="font-mono text-[10px] text-accent text-center mt-2">tryalz.app/eval/T-${t.id}</div>
+      </div>
+      <div class="shadow-neu rounded-[16px] p-5 bg-chassis screws">
+        <div class="font-mono text-[10px] font-bold uppercase tracking-[.08em] text-ink-muted mb-3">TRIAL INFO</div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-ink-muted">Start</span><span class="font-mono">${t.start}</span></div>
+          <div class="flex justify-between"><span class="text-ink-muted">End</span><span class="font-mono">${t.end}</span></div>
+          <div class="flex justify-between"><span class="text-ink-muted">Target</span><span class="font-mono">${t.target} evals</span></div>
+          <div class="flex justify-between"><span class="text-ink-muted">Completed</span><span class="font-mono font-bold">${t.completed}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('trial-detail-content').innerHTML = html;
+}
+
+// ===== ACTIONS =====
+function reviewAction(action, id) {
+  const r = REQUESTS.find(x=>x.id===id);
+  if(r) { r.status = action; alert(`Request ${action.replace('_',' ')} successfully!`); navigate('va-dash'); }
+}
+function setDecision(id, decision) {
+  const t = TRIALS.find(x=>x.id===id);
+  if(t) { t.decision = decision; alert(`Trial marked as: ${decision}`); navigate('trial-detail', id); }
+}
+function submitRequest() { alert('Trial request submitted successfully! The Value Analysis Team will review it shortly.'); navigate('sales-dash'); }
+function addQuestion() {
+  const builder = document.getElementById('question-builder');
+  const n = builder.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'shadow-neu-in rounded-[8px] p-4 bg-chassis flex items-center gap-3';
+  div.innerHTML = `<span class="font-mono text-[10px] text-ink-muted font-bold w-6">Q${n}</span><input class="flex-1 bg-transparent font-mono text-[12px] outline-none" placeholder="Question text..."><select class="shadow-neu-in rounded px-2 py-1 bg-chassis font-mono text-[10px]"><option>Rating 1-5</option><option>Yes/No</option><option>Text</option><option>Multiple Choice</option></select>`;
+  builder.appendChild(div);
+}
+function selectRating(btn, val) {
+  btn.parentElement.querySelectorAll('button').forEach(b=>{b.classList.remove('bg-accent','text-white');b.classList.add('bg-chassis')});
+  btn.classList.add('bg-accent','text-white');btn.classList.remove('bg-chassis');
+}
+function selectYN(btn, val) {
+  btn.parentElement.querySelectorAll('button').forEach(b=>{b.classList.remove('bg-accent','text-white');b.classList.add('bg-chassis')});
+  btn.classList.add('bg-accent','text-white');btn.classList.remove('bg-chassis');
+}
+function submitEval() {
+  document.getElementById('nurse-form').classList.add('hidden');
+  document.getElementById('nurse-confirm').classList.remove('hidden');
+}
+
+// Init
+navigate('login');
+</script>
+</body>
+</html>

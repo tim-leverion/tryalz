@@ -1,0 +1,1123 @@
+﻿Tryalz MVP PRD
+0. Product Blurb
+Tryalz is a workflow system for hospital medical device trials.
+It replaces fragmented, inconsistent, and often paper-based trial processes with a centralized system that lets health systems:
+* standardize how trials are requested and approved,
+
+* reduce bias in evaluation questionnaires,
+
+* digitize trial feedback collection,
+
+* track trial progress across hospitals,
+
+* close the loop on final product decisions.
+
+The MVP is not a full enterprise platform. It is a lean operating system for one critical workflow:
+Sales rep requests trial → value analysis team reviews and governs request/questionnaire → approved trial is launched → nurses submit evaluation feedback digitally → value analysis team reviews results and records final decision.
+This matches the main pain points described in the call: siloed trials, lack of corporate oversight, non-standard approvals, biased vendor-provided questionnaires, paper-based data collection, and poor visibility into status and outcomes.   
+________________
+
+
+1. Product Goal
+Enable health systems to govern and run medical device trials through one structured workflow, from request to final decision.
+The MVP must make these outcomes possible:
+   1. Every trial request goes through a standardized approval path.
+
+   2. The value analysis team can review both the trial request and its evaluation questionnaire before the trial starts.
+
+   3. Trial questionnaires are distributed digitally during an active trial.
+
+   4. Nurses can submit evaluations easily without accounts.
+
+   5. Sales reps and value analysis team can monitor trial progress.
+
+   6. The value analysis team can review results and log the final outcome of the trial.
+
+   7. The system becomes the source of truth for historical and active trials.
+
+This is the minimum viable promise of the product: control, visibility, standardization, and reduction of questionnaire bias.   
+________________
+
+
+2. Success Criteria (MVP)
+The MVP succeeds if:
+      * A sales rep can submit a trial request with required information and questionnaire.
+
+      * A value analysis team can approve, reject, or request edits on the submission.
+
+      * Approved trials can be launched with location, timing, and required evaluation count.
+
+      * Nurses can complete digital evaluations through a simple trial-specific link or QR code.
+
+      * Sales reps can see whether evaluations are being completed.
+
+      * Value analysis team can monitor trial progress and completed evaluations.
+
+      * When the trial ends, the system provides a usable summary of the results.
+
+      * The value analysis team can mark a final status such as approved for adoption or declined.
+
+      * A health system can use the platform as a historical log of trial activity.
+
+Operationally, the MVP should be usable without custom engineering for each trial. The system should support repeated use across multiple hospitals inside one health system.   
+________________
+
+
+3. Product Principles
+3.1 Standardization over flexibility
+The MVP should enforce a clean process, not attempt to handle every hospital-specific variation.
+3.2 Governance before analytics
+The first job is controlling trial initiation and questionnaire quality. Fancy reporting is secondary.
+3.3 Lean digitization
+The MVP does not need complex nurse accounts, deep integrations, or elaborate workflow builders. It needs a working loop.
+3.4 Source of truth
+A trial must live in one system with a visible status, owners, dates, questionnaire, and final outcome.
+3.5 Bias reduction is a core differentiator
+Questionnaire review and bias detection are not side features. They are central to the value proposition.   
+________________
+
+
+4. Core User Personas
+4.1 Sales Rep
+External vendor representative proposing a medical device/product for trial.
+Primary motivation:
+         * get a trial approved,
+
+         * run the trial smoothly,
+
+         * collect evaluations,
+
+         * know final status without chasing people manually.
+
+4.2 Value Analysis Team
+Cross-functional decision-making group representing supply chain, clinical leadership, and related stakeholders.
+Primary motivation:
+            * prevent uncontrolled trials,
+
+            * review and improve trial questionnaires,
+
+            * ensure fair evaluation,
+
+            * monitor progress,
+
+            * make and record adoption decisions.
+
+4.3 Nurse / Clinical Evaluator
+Clinical staff member using the product during a trial and submitting feedback.
+Primary motivation:
+               * complete evaluation quickly with low friction.
+
+4.4 Hospital Sponsor
+Internal clinical leader or nurse manager who wants the trial to happen and acts as sponsor/champion for the proposed product.
+Primary motivation:
+                  * bring a candidate product into the official review process.
+
+This sponsor is operationally important, even if they do not need their own full portal in MVP. 
+________________
+
+
+5. Core Entities
+These are the minimum domain entities another AI or builder needs to understand.
+5.1 Health System
+The parent organization containing multiple hospitals.
+Fields:
+                     * id
+
+                     * name
+
+                     * status
+
+5.2 Hospital
+An individual facility within a health system.
+Fields:
+                        * id
+
+                        * health_system_id
+
+                        * name
+
+                        * location
+
+                        * status
+
+5.3 User
+Represents authenticated platform users.
+Common fields:
+                           * id
+
+                           * name
+
+                           * email
+
+                           * role
+
+                           * organization_name
+
+                           * active_status
+
+Roles:
+                              * sales_rep
+
+                              * value_analysis_admin or reviewer
+
+                              * optional internal operator/admin
+
+5.4 Sponsor
+Internal hospital-side person sponsoring the trial.
+Fields:
+                                 * id
+
+                                 * name
+
+                                 * title
+
+                                 * hospital_id
+
+                                 * contact info
+
+                                 * linked_trial_request_id
+
+Note: sponsor may initially be stored as structured fields on the trial request rather than a full separate entity.
+5.5 Product / Device Candidate
+The item being trialed.
+Fields:
+                                    * id
+
+                                    * name
+
+                                    * manufacturer/vendor
+
+                                    * category
+
+                                    * description
+
+                                    * submitted_by_sales_rep
+
+                                    * external reference info
+
+5.6 Trial Request
+The pre-approval object submitted by the sales rep.
+Fields:
+                                       * id
+
+                                       * health_system_id
+
+                                       * hospital_ids or intended locations
+
+                                       * product/device info
+
+                                       * sponsor info
+
+                                       * submitted_by_sales_rep_id
+
+                                       * questionnaire_version_id
+
+                                       * notes
+
+                                       * requested_start_window
+
+                                       * requested_duration
+
+                                       * requested_eval_count
+
+                                       * status
+
+                                       * reviewer comments
+
+                                       * ai_review_output
+
+                                       * timestamps
+
+Statuses:
+                                          * draft
+
+                                          * submitted
+
+                                          * under_review
+
+                                          * changes_requested
+
+                                          * approved
+
+                                          * rejected
+
+                                          * canceled
+
+5.7 Questionnaire Template
+The evaluation form attached to a trial.
+Fields:
+                                             * id
+
+                                             * title
+
+                                             * linked_trial_request_id or reusable_template_flag
+
+                                             * questions[]
+
+                                             * version
+
+                                             * source
+
+                                             * ai_bias_review
+
+                                             * status
+
+5.8 Question
+Fields:
+                                                * id
+
+                                                * questionnaire_id
+
+                                                * type
+
+                                                * prompt
+
+                                                * required
+
+                                                * answer options
+
+                                                * order
+
+                                                * bias_flag or review notes
+
+5.9 Trial
+The approved and active operational trial created from an approved trial request.
+Fields:
+                                                   * id
+
+                                                   * trial_request_id
+
+                                                   * health_system_id
+
+                                                   * hospital_ids
+
+                                                   * final_questionnaire_version_id
+
+                                                   * start_date
+
+                                                   * end_date
+
+                                                   * target_eval_count
+
+                                                   * actual_eval_count
+
+                                                   * status
+
+                                                   * qr_code/link
+
+                                                   * summary_report_id
+
+                                                   * final_decision
+
+                                                   * timestamps
+
+Statuses:
+                                                      * scheduled
+
+                                                      * active
+
+                                                      * completed
+
+                                                      * under_decision
+
+                                                      * closed
+
+5.10 Evaluation Submission
+A single completed questionnaire from a nurse or evaluator.
+Fields:
+                                                         * id
+
+                                                         * trial_id
+
+                                                         * hospital_id
+
+                                                         * questionnaire_id
+
+                                                         * submission_timestamp
+
+                                                         * answers
+
+                                                         * optional unit/department
+
+                                                         * optional evaluator role
+
+                                                         * completion_status
+
+5.11 Trial Summary / Report
+A generated artifact for decision-making.
+Fields:
+                                                            * id
+
+                                                            * trial_id
+
+                                                            * aggregate results
+
+                                                            * completion stats
+
+                                                            * response themes
+
+                                                            * ai-generated summary
+
+                                                            * generated_at
+
+5.12 Final Trial Decision
+Could be a dedicated entity or stored on Trial.
+Fields:
+                                                               * trial_id
+
+                                                               * decision_status
+
+                                                               * decision_notes
+
+                                                               * decided_by
+
+                                                               * decided_at
+
+Decision statuses:
+                                                                  * adopted
+
+                                                                  * declined
+
+                                                                  * deferred
+
+                                                                  * more_info_needed
+
+These entities reflect the actual operating model described in the call: request, review, approve, launch, collect, summarize, decide.   
+________________
+
+
+6. Core User Journeys
+6.1 Sales Rep Journey
+                                                                     1. Pitch product to clinical stakeholders at a hospital.
+
+                                                                     2. Gain informal interest and identify hospital sponsor.
+
+                                                                     3. Submit trial request in Tryalz.
+
+                                                                     4. Attach proposed evaluation questionnaire.
+
+                                                                     5. Wait for value analysis team review.
+
+                                                                     6. Receive one of three outcomes:
+
+                                                                        * approved,
+
+                                                                        * changes requested,
+
+                                                                        * rejected.
+
+                                                                           7. If changes requested, edit and resubmit.
+
+                                                                           8. If approved, view trial details:
+
+                                                                              * date,
+
+                                                                              * location,
+
+                                                                              * duration,
+
+                                                                              * required number of evaluations.
+
+                                                                                 9. Access trial-specific QR code/link.
+
+                                                                                 10. Share QR code/link during the active trial.
+
+                                                                                 11. Monitor evaluation completion/progress.
+
+                                                                                 12. After trial closes, see final decision status without manual chasing.
+
+6.2 Value Analysis Team Journey
+                                                                                    1. Open new trial requests queue.
+
+                                                                                    2. Review request details:
+
+                                                                                       * product,
+
+                                                                                       * sponsor,
+
+                                                                                       * proposed locations,
+
+                                                                                       * questionnaire.
+
+                                                                                          3. Review AI bias/quality analysis of questionnaire.
+
+                                                                                          4. Approve, reject, or request edits.
+
+                                                                                          5. If approved, define operational setup:
+
+                                                                                             * hospitals/units,
+
+                                                                                             * dates,
+
+                                                                                             * duration,
+
+                                                                                             * evaluation count.
+
+                                                                                                6. Monitor trial progress while active.
+
+                                                                                                7. Review trial summary/report after completion.
+
+                                                                                                8. Meet offline if needed for internal decision-making.
+
+                                                                                                9. Record final decision in system.
+
+                                                                                                10. Maintain historical visibility of past trials.
+
+6.3 Nurse / Evaluator Journey
+                                                                                                   1. Receive QR code or link from sales rep or on-site process.
+
+                                                                                                   2. Open questionnaire on mobile or web.
+
+                                                                                                   3. Complete evaluation.
+
+                                                                                                   4. Submit response.
+
+                                                                                                   5. Exit. No login required.
+
+This is the correct lean flow. Nurses do not need dashboards or accounts in MVP. The hospital sponsor does not need a heavy workflow either. Most governance sits with sales rep and value analysis team. 
+________________
+
+
+7. Functional Requirements
+7.1 Authentication and Roles
+Must-have
+                                                                                                      * User login for sales reps and value analysis team.
+
+                                                                                                      * Role-based access control.
+
+                                                                                                      * Health-system-level data partitioning.
+
+                                                                                                      * Sales reps can only access their own trial requests/trials unless explicitly expanded later.
+
+                                                                                                      * Value analysis team can access all relevant trial activity for their health system.
+
+Out of scope
+                                                                                                         * SSO
+
+                                                                                                         * complex permission matrices
+
+                                                                                                         * nurse authentication
+
+________________
+
+
+7.2 Trial Request Submission
+Must-have
+Sales rep can create and submit a trial request with:
+                                                                                                            * product/device name
+
+                                                                                                            * vendor/manufacturer name
+
+                                                                                                            * sponsor name and role
+
+                                                                                                            * target health system
+
+                                                                                                            * target hospital(s) or intended location(s)
+
+                                                                                                            * notes/context
+
+                                                                                                            * requested dates or timeframe
+
+                                                                                                            * requested trial duration
+
+                                                                                                            * requested evaluation count
+
+                                                                                                            * questionnaire attachment or direct questionnaire builder input
+
+Behaviors
+                                                                                                               * Request can be saved as draft before submission.
+
+                                                                                                               * Once submitted, status becomes submitted.
+
+                                                                                                               * Value analysis team is notified.
+
+                                                                                                               * Questionnaire is treated as part of the request, not a separate later artifact.
+
+Constraints
+                                                                                                                  * No advanced workflow designer needed.
+
+                                                                                                                  * A simple form with structured fields is sufficient.
+
+This is critical because the current real-world problem is that requests are inconsistent, informal, and often not governed centrally.   
+________________
+
+
+7.3 Questionnaire Intake and Review
+Must-have
+                                                                                                                     * Sales rep can submit evaluation questions as part of the trial request.
+
+                                                                                                                     * Value analysis team can review questionnaire before approval.
+
+                                                                                                                     * Each questionnaire has a visible version attached to the request.
+
+                                                                                                                     * Reviewer can request edits to specific questions.
+
+AI-assisted review
+The system should run a lightweight automated review on submitted questions and produce:
+                                                                                                                        * possible bias flags,
+
+                                                                                                                        * problematic phrasing flags,
+
+                                                                                                                        * leading question flags,
+
+                                                                                                                        * imbalance flags,
+
+                                                                                                                        * suggested edits or caution notes.
+
+Reviewer actions
+                                                                                                                           * approve questionnaire as-is,
+
+                                                                                                                           * request changes,
+
+                                                                                                                           * reject request entirely,
+
+                                                                                                                           * add comments tied to question numbers or general comments.
+
+Constraints
+                                                                                                                              * AI review is advisory, not autonomous.
+
+                                                                                                                              * AI does not block submission on its own.
+
+                                                                                                                              * Final decision remains with humans.
+
+This is one of the clearest differentiators from current alternatives and one of the strongest reasons a value analysis team would care.   
+________________
+
+
+7.4 Trial Request Review Workflow
+Must-have
+Value analysis team can view a queue of trial requests with:
+                                                                                                                                 * status
+
+                                                                                                                                 * submitting sales rep
+
+                                                                                                                                 * sponsor
+
+                                                                                                                                 * product name
+
+                                                                                                                                 * target hospitals
+
+                                                                                                                                 * submission date
+
+Each request detail page must show:
+                                                                                                                                    * full request details
+
+                                                                                                                                    * questionnaire
+
+                                                                                                                                    * AI review output
+
+                                                                                                                                    * comment history
+
+                                                                                                                                    * action buttons
+
+Available actions
+                                                                                                                                       * Approve
+
+                                                                                                                                       * Request Changes
+
+                                                                                                                                       * Reject
+
+On Request Changes
+                                                                                                                                          * reviewer enters comments,
+
+                                                                                                                                          * system updates status to changes_requested,
+
+                                                                                                                                          * sales rep is notified,
+
+                                                                                                                                          * sales rep can edit and resubmit.
+
+On Reject
+                                                                                                                                             * reviewer enters reason,
+
+                                                                                                                                             * system updates status to rejected.
+
+On Approve
+                                                                                                                                                * request progresses to trial setup.
+
+________________
+
+
+7.5 Trial Setup After Approval
+Must-have
+On approval, the value analysis team must define:
+                                                                                                                                                   * trial start date,
+
+                                                                                                                                                   * trial end date or duration,
+
+                                                                                                                                                   * participating hospital(s),
+
+                                                                                                                                                   * unit/department if relevant,
+
+                                                                                                                                                   * required number of evaluations/forms,
+
+                                                                                                                                                   * final approved questionnaire version.
+
+The system then creates an active Trial record.
+Outputs
+                                                                                                                                                      * unique trial page
+
+                                                                                                                                                      * unique trial QR code or shareable link
+
+                                                                                                                                                      * visible status: scheduled or active
+
+Constraints
+                                                                                                                                                         * No calendar sync required for MVP.
+
+                                                                                                                                                         * No hospital-side workflow automation required.
+
+________________
+
+
+7.6 Questionnaire Distribution and Completion
+Must-have
+For each active trial:
+                                                                                                                                                            * system generates a simple response link and QR code,
+
+                                                                                                                                                            * sales rep can access this from the trial page,
+
+                                                                                                                                                            * nurses can open and submit evaluations without logging in.
+
+Questionnaire page requirements
+                                                                                                                                                               * mobile-friendly
+
+                                                                                                                                                               * fast load
+
+                                                                                                                                                               * clear product/trial context
+
+                                                                                                                                                               * simple question flow
+
+                                                                                                                                                               * submit confirmation
+
+Optional capture fields
+                                                                                                                                                                  * hospital
+
+                                                                                                                                                                  * unit/department
+
+                                                                                                                                                                  * clinician role
+
+Constraints
+                                                                                                                                                                     * keep friction low,
+
+                                                                                                                                                                     * no account creation,
+
+                                                                                                                                                                     * no complicated branching logic in MVP unless required by one core use case.
+
+This replaces pen-and-paper collection and creates a live data trail.   
+________________
+
+
+7.7 Active Trial Dashboard
+Must-have for Sales Rep
+                                                                                                                                                                        * list of own trials
+
+                                                                                                                                                                        * status per trial
+
+                                                                                                                                                                        * hospitals/locations
+
+                                                                                                                                                                        * completion progress:
+
+                                                                                                                                                                           * target evaluations,
+
+                                                                                                                                                                           * completed evaluations,
+
+                                                                                                                                                                           * remaining evaluations
+
+                                                                                                                                                                              * access to QR code/link
+
+                                                                                                                                                                              * final decision status when closed
+
+Must-have for Value Analysis Team
+                                                                                                                                                                                 * list of active and historical trials
+
+                                                                                                                                                                                 * filters by status, hospital, vendor, product
+
+                                                                                                                                                                                 * progress visibility
+
+                                                                                                                                                                                 * response count
+
+                                                                                                                                                                                 * basic summary metrics
+
+                                                                                                                                                                                 * link to raw submissions if needed
+
+Dashboard goals
+The dashboard is for operational visibility, not advanced BI.
+________________
+
+
+7.8 Trial Completion and Summary
+Trigger
+When either:
+                                                                                                                                                                                    * trial end date is reached, or
+
+                                                                                                                                                                                    * required evaluation count is reached and admin manually closes it.
+
+Must-have
+System creates a summary view/report with:
+                                                                                                                                                                                       * total completed evaluations
+
+                                                                                                                                                                                       * completion rate against target
+
+                                                                                                                                                                                       * aggregated answer results
+
+                                                                                                                                                                                       * basic trends or counts
+
+                                                                                                                                                                                       * optional AI-generated narrative summary
+
+Goal
+Give value analysis team a usable artifact for internal decision-making.
+Constraints
+                                                                                                                                                                                          * sophisticated analytics not required,
+
+                                                                                                                                                                                          * export to PDF not required for MVP unless easy,
+
+                                                                                                                                                                                          * summary can initially be a clean web page.
+
+________________
+
+
+7.9 Final Decision Logging
+Must-have
+Value analysis team can mark final trial outcome:
+                                                                                                                                                                                             * adopted
+
+                                                                                                                                                                                             * declined
+
+                                                                                                                                                                                             * deferred
+
+                                                                                                                                                                                             * more info needed
+
+Also add:
+                                                                                                                                                                                                * decision notes
+
+                                                                                                                                                                                                * decision date
+
+                                                                                                                                                                                                * decision maker
+
+Why critical
+This closes the loop for both governance and vendor experience. It also turns the system into a measurable historical source of truth. Right now, reps often have to chase updates manually. The platform should remove that ambiguity. 
+________________
+
+
+7.10 Notifications
+Must-have
+System-generated notifications for:
+                                                                                                                                                                                                   * new request submitted
+
+                                                                                                                                                                                                   * changes requested
+
+                                                                                                                                                                                                   * request approved
+
+                                                                                                                                                                                                   * request rejected
+
+                                                                                                                                                                                                   * trial scheduled
+
+                                                                                                                                                                                                   * trial nearing end
+
+                                                                                                                                                                                                   * trial completed
+
+                                                                                                                                                                                                   * final decision recorded
+
+Delivery
+Email is sufficient for MVP.
+In-app notifications are optional.
+________________
+
+
+7.11 Auditability and History
+Must-have
+For every request and trial, log:
+                                                                                                                                                                                                      * who submitted,
+
+                                                                                                                                                                                                      * who reviewed,
+
+                                                                                                                                                                                                      * questionnaire versions,
+
+                                                                                                                                                                                                      * comments,
+
+                                                                                                                                                                                                      * approval/rejection dates,
+
+                                                                                                                                                                                                      * final decision.
+
+Why
+Healthcare procurement/trial environments need traceability even in an MVP.
+________________
+
+
+8. End-to-End Process Definition
+This is the operating loop another AI or builder must preserve.
+Phase 1: Opportunity formation
+Outside the system:
+                                                                                                                                                                                                         * sales rep pitches product,
+
+                                                                                                                                                                                                         * hospital-side sponsor expresses interest.
+
+Phase 2: Trial request governance
+Inside Tryalz:
+                                                                                                                                                                                                            * sales rep submits request and questionnaire,
+
+                                                                                                                                                                                                            * value analysis team reviews,
+
+                                                                                                                                                                                                            * AI assists with question quality review,
+
+                                                                                                                                                                                                            * request is approved, rejected, or sent back for edits.
+
+Phase 3: Trial launch
+Inside Tryalz:
+                                                                                                                                                                                                               * value analysis team sets dates, locations, and evaluation requirements,
+
+                                                                                                                                                                                                               * system creates active trial and QR/link.
+
+Phase 4: Trial execution
+Partly outside, partly inside:
+                                                                                                                                                                                                                  * sales rep shares QR/link during trial,
+
+                                                                                                                                                                                                                  * nurses submit evaluations digitally,
+
+                                                                                                                                                                                                                  * sales rep and value analysis team monitor progress.
+
+Phase 5: Trial closure and decision
+Inside Tryalz:
+                                                                                                                                                                                                                     * system summarizes results,
+
+                                                                                                                                                                                                                     * value analysis team records final decision,
+
+                                                                                                                                                                                                                     * sales rep sees outcome,
+
+                                                                                                                                                                                                                     * historical record remains stored.
+
+That is the essential product loop. Anything outside it is secondary.
+________________
+
+
+9. Non-Functional Requirements
+Must-have
+                                                                                                                                                                                                                        * Responsive web application
+
+                                                                                                                                                                                                                        * Mobile-friendly evaluation pages
+
+                                                                                                                                                                                                                        * Role-based access control
+
+                                                                                                                                                                                                                        * Reliable data persistence
+
+                                                                                                                                                                                                                        * Basic audit logging
+
+                                                                                                                                                                                                                        * Clean status transitions
+
+                                                                                                                                                                                                                        * Secure storage of questionnaire responses
+
+                                                                                                                                                                                                                        * Performance suitable for low-to-moderate concurrent use
+
+Nice-to-have, not required for MVP
+                                                                                                                                                                                                                           * enterprise SSO
+
+                                                                                                                                                                                                                           * API integrations with hospital systems
+
+                                                                                                                                                                                                                           * advanced analytics engine
+
+                                                                                                                                                                                                                           * advanced AI orchestration
+
+________________
+
+
+10. Explicitly Out of Scope for MVP
+Do not bloat the first version with these:
+                                                                                                                                                                                                                              * full hospital staff portal
+
+                                                                                                                                                                                                                              * nurse accounts and identity management
+
+                                                                                                                                                                                                                              * complex workflow builder per health system
+
+                                                                                                                                                                                                                              * advanced survey builder logic
+
+                                                                                                                                                                                                                              * integrations with EMR, ERP, procurement, or supply chain tools
+
+                                                                                                                                                                                                                              * contract management
+
+                                                                                                                                                                                                                              * financial ROI dashboards
+
+                                                                                                                                                                                                                              * automated trial scheduling logic
+
+                                                                                                                                                                                                                              * multi-tenant client self-serve onboarding
+
+                                                                                                                                                                                                                              * advanced AI autonomy
+
+                                                                                                                                                                                                                              * automated final recommendation engine
+
+                                                                                                                                                                                                                              * full enterprise reporting suite
+
+                                                                                                                                                                                                                              * native mobile app
+
+The MVP is a controlled workflow product, not a hospital operating platform.
+________________
+
+
+11. Assumptions and Constraints
+Assumptions
+                                                                                                                                                                                                                                 * Hospitals/value analysis teams are willing to use a centralized approval workflow.
+
+                                                                                                                                                                                                                                 * Sales reps are willing to submit requests formally if that is the required path.
+
+                                                                                                                                                                                                                                 * Nurses will complete mobile/web forms if friction is low.
+
+                                                                                                                                                                                                                                 * One questionnaire per trial is sufficient for MVP, even if later there may be variants by department or hospital.
+
+                                                                                                                                                                                                                                 * Value analysis team decision-making may still happen partly offline; the system only needs to capture the result.
+
+                                                                                                                                                                                                                                 * AI questionnaire review is positioned as an assistive layer, not a regulatory-grade validator.
+
+Constraints
+                                                                                                                                                                                                                                    * Real hospital processes vary widely.
+
+                                                                                                                                                                                                                                    * The first version should optimize for demonstrability and utility, not perfect configurability.
+
+                                                                                                                                                                                                                                    * Early customers may use the system as a guided process rather than fully self-serve software.
+
+These constraints follow directly from the call: the product is still being shaped around live buyer feedback, and the immediate need is a strong, coherent demoable workflow. 
+________________
+
+
+12. MVP Acceptance Checklist
+The MVP is acceptable if all of the following are true:
+                                                                                                                                                                                                                                       * A sales rep can create and submit a complete trial request.
+
+                                                                                                                                                                                                                                       * A value analysis team can review the request and questionnaire in one place.
+
+                                                                                                                                                                                                                                       * AI can generate questionnaire quality/bias notes for reviewer assistance.
+
+                                                                                                                                                                                                                                       * The reviewer can approve, reject, or request edits.
+
+                                                                                                                                                                                                                                       * Approved requests can be converted into active trials with dates, locations, and required evaluation count.
+
+                                                                                                                                                                                                                                       * Each active trial has a working QR code/link for evaluators.
+
+                                                                                                                                                                                                                                       * Nurses can complete evaluation forms without login.
+
+                                                                                                                                                                                                                                       * Sales rep and value analysis team can monitor completion progress.
+
+                                                                                                                                                                                                                                       * Trial results can be summarized in-platform.
+
+                                                                                                                                                                                                                                       * Value analysis team can record the final outcome.
+
+                                                                                                                                                                                                                                       * Historical trial records remain searchable and readable.
+
+________________
+
+
+13. Recommended MVP Screens
+This is the minimum screen inventory.
+Sales Rep
+                                                                                                                                                                                                                                          * Login
+
+                                                                                                                                                                                                                                          * Trial requests list
+
+                                                                                                                                                                                                                                          * New/edit trial request form
+
+                                                                                                                                                                                                                                          * Trial request detail
+
+                                                                                                                                                                                                                                          * Trial detail with QR code and progress
+
+Value Analysis Team
+                                                                                                                                                                                                                                             * Login
+
+                                                                                                                                                                                                                                             * Request review queue
+
+                                                                                                                                                                                                                                             * Request detail with questionnaire review and AI notes
+
+                                                                                                                                                                                                                                             * Trial setup screen
+
+                                                                                                                                                                                                                                             * Active/historical trials dashboard
+
+                                                                                                                                                                                                                                             * Trial detail with submissions and summary
+
+                                                                                                                                                                                                                                             * Final decision modal/form
+
+Nurse
+                                                                                                                                                                                                                                                * Questionnaire page
+
+                                                                                                                                                                                                                                                * Submission confirmation page
+
+Shared/System
+                                                                                                                                                                                                                                                   * Email notification templates
+
+                                                                                                                                                                                                                                                   * Basic audit/history view on request/trial detail
+
+________________
+
+
+14. Key Product Risks
+14.1 Process variation
+Each health system may run value analysis differently. MVP must avoid overfitting to one exact org chart.
+14.2 Bias review trust
+If AI review is weak or noisy, it undermines the differentiation. Position it carefully as assistant, not authority.
+14.3 Submission friction
+If sales reps find request submission too heavy, adoption may suffer.
+14.4 Nurse completion rate
+If the evaluation form is clunky, trial data quality collapses.
+14.5 Decision-making remains offline
+The product may support workflow but not fully own the real decision process. The MVP must still capture closure cleanly.
+________________
+
+
+15. Build Priority Order
+This is the correct build order.
+P0
+                                                                                                                                                                                                                                                      * Auth and roles
+
+                                                                                                                                                                                                                                                      * Trial request form
+
+                                                                                                                                                                                                                                                      * Questionnaire submission
+
+                                                                                                                                                                                                                                                      * Review queue
+
+                                                                                                                                                                                                                                                      * Approve / reject / request changes
+
+                                                                                                                                                                                                                                                      * Trial creation from approved request
+
+                                                                                                                                                                                                                                                      * QR code / link generation
+
+                                                                                                                                                                                                                                                      * Nurse questionnaire page
+
+                                                                                                                                                                                                                                                      * Submission storage
+
+                                                                                                                                                                                                                                                      * Trial progress dashboard
+
+                                                                                                                                                                                                                                                      * Final decision logging
+
+P1
+                                                                                                                                                                                                                                                         * AI questionnaire review
+
+                                                                                                                                                                                                                                                         * AI-assisted summary generation
+
+                                                                                                                                                                                                                                                         * richer filters and reporting
+
+                                                                                                                                                                                                                                                         * reusable questionnaire templates
+
+P2
+                                                                                                                                                                                                                                                            * configurable workflows by health system
+
+                                                                                                                                                                                                                                                            * integrations
+
+                                                                                                                                                                                                                                                            * richer analytics and benchmarking
+
+________________
+
+
+16. One-Sentence Product Definition for Builders
+Tryalz MVP is a B2B workflow app that standardizes medical device trials for health systems by centralizing trial approval, questionnaire governance, digital evaluation collection, progress tracking, and final decision logging. 
+17. Builder Notes for Another AI
+When interpreting this PRD, preserve these truths:
+                                                                                                                                                                                                                                                               * The real buyer is the health system/value analysis function, not the sales rep.
+
+                                                                                                                                                                                                                                                               * The sales rep is a core actor, but not the owner of governance.
+
+                                                                                                                                                                                                                                                               * Bias reduction in questionnaires is a major differentiator.
+
+                                                                                                                                                                                                                                                               * Trial request governance and trial execution are distinct but connected workflows.
+
+                                                                                                                                                                                                                                                               * Nurses need the lowest-friction experience in the product.
+
+                                                                                                                                                                                                                                                               * Final decision logging is essential because it closes the operational loop.
+
+                                                                                                                                                                                                                                                               * This is a lean prototype spec, so optimize for working flow clarity, not full enterprise complexity.
+
+If you want this turned into a cleaner founder-facing PRD format with sections like epics, user stories, acceptance criteria, and screen-by-screen requirements, I can do that next.
